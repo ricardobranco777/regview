@@ -8,7 +8,7 @@ import sys
 
 from requests.exceptions import RequestException
 
-from .docker_registry import DockerRegistry
+from .docker_registry import DockerRegistry, Tag
 
 
 class DockerHub(DockerRegistry):
@@ -40,7 +40,6 @@ class DockerHub(DockerRegistry):
         Get paginated results
         """
         items = []
-        prefix = f"{string}/" if string else ""
         while True:
             try:
                 got = self.session.get(url, **kwargs)
@@ -49,7 +48,7 @@ class DockerHub(DockerRegistry):
                 logging.error("%s: %s", url, err)
                 sys.exit(1)
             data = got.json()
-            items.extend([f"{prefix}{_['name']}" for _ in data['results']])
+            items.extend(data['results'])
             if not data['next']:
                 break
             url = data['next']
@@ -77,7 +76,9 @@ class DockerHub(DockerRegistry):
         headers = {"Authorization": f"JWT {self.token}"}
         for namespace in self.get_namespaces():
             url = f"https://hub.docker.com/v2/repositories/{namespace}/"
-            repos.extend(self._get_paginated(url, namespace, headers=headers))
+            repos.extend([
+                f"{namespace}/{_['name']}"
+                for _ in self._get_paginated(url, namespace, headers=headers)])
         if repos and pattern:
             return fnmatch.filter(repos, pattern)
         return repos
@@ -88,7 +89,7 @@ class DockerHub(DockerRegistry):
         """
         url = f"https://hub.docker.com/v2/repositories/{repo}/tags/"
         headers = {"Authorization": f"JWT {self.token}"}
-        tags = self._get_paginated(url, headers=headers)
+        tags = [Tag(info['name'], info=info) for info in self._get_paginated(url, headers=headers)]
         if tags and pattern:
             return fnmatch.filter(tags, pattern)
         return tags

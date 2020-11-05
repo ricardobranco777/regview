@@ -17,6 +17,16 @@ from .auth import GuessAuth2
 from .utils import get_docker_credentials, print_response
 
 
+class Tag(str):
+    """
+    Tag class to support additional info
+    """
+    def __new__(cls, s, info=None):
+        obj = str.__new__(cls, s)
+        obj.info = info
+        return obj
+
+
 class DockerRegistry:
     """
     Class to implement Docker Registry methods
@@ -119,11 +129,12 @@ class DockerRegistry:
         """
         Get repositories
         """
+        url = f"{self.registry}/v2/_catalog"
         headers = {}
         if self.session.auth and self.session.auth.url:
             token = self.session.auth.get_token(params={"scope": "registry:catalog:*"})
             headers.update({"Authorization": token})
-        repos = self._get_paginated(f"{self.registry}/v2/_catalog", "repositories", headers=headers)
+        repos = self._get_paginated(url, "repositories", headers=headers)
         if repos and pattern:
             return fnmatch.filter(repos, pattern)
         return repos
@@ -132,8 +143,9 @@ class DockerRegistry:
         """
         Get tags for specified repo
         """
+        url = f"{self.registry}/v2/{repo}/tags/list"
         headers = self._get_token_repo(repo)
-        tags = self._get_paginated(f"{self.registry}/v2/{repo}/tags/list", "tags", headers=headers)
+        tags = list(map(Tag, self._get_paginated(url, "tags", headers=headers)))
         if tags and pattern:
             tags = fnmatch.filter(tags, pattern)
         return tags
