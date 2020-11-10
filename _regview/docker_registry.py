@@ -185,3 +185,16 @@ class DockerRegistry:
             logging.error("%s@%s: %s", repo, digest, err)
             return None
         return got
+
+    def get_info(self, repo, tag):
+        """
+        Get info from manifest v2
+        """
+        manifest = self.get_manifest(repo, tag)
+        if not manifest:
+            return None
+        info = {
+            'Digest': tag if tag.startswith("sha256:") else manifest['docker-content-digest'],
+            'CompressedSize': sum([_['size'] for _ in manifest['layers']]),
+            'ID': manifest['config']['digest']}
+        return info
