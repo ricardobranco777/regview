@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"runtime/debug"
 	"time"
 
 	"github.com/docker/go-units"
@@ -51,4 +52,21 @@ func filterRegex(ss []string, regex *regexp.Regexp) []string {
 		}
 	}
 	return matched
+}
+
+func getCommit() string {
+	var commit, dirty string
+
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range info.Settings {
+			switch {
+			case setting.Key == "vcs.revision":
+				commit = setting.Value
+			case setting.Key == "vcs.modified":
+				dirty = "-dirty"
+			}
+		}
+	}
+
+	return commit + dirty
 }
