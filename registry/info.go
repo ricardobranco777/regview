@@ -12,10 +12,10 @@ import (
 
 	"github.com/distribution/distribution/manifest/manifestlist"
 	"github.com/distribution/distribution/manifest/schema2"
+	"github.com/ricardobranco777/regview/oci"
 	"golang.org/x/exp/slices"
 
 	digest "github.com/opencontainers/go-digest"
-	oci "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 // Info type for interesting information
