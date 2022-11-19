@@ -31,9 +31,8 @@ func getPass(prompt string, args ...interface{}) string {
 	return string(pass)
 }
 
-func prettyTime(str string) string {
+func prettyTime(t *time.Time) string {
 	tz, _ := time.LoadLocation("Local")
-	t, _ := time.Parse(time.RFC3339Nano, str)
 	return t.In(tz).Format(time.UnixDate)
 }
 

@@ -15,19 +15,15 @@ import (
 	"golang.org/x/exp/slices"
 
 	digest "github.com/opencontainers/go-digest"
+	oci "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 // Info type for interesting information
 type Info struct {
-	Architecture string           // `json:architecture`
-	Author       string           // `json:architecture`
-	Config       map[string]any   // `json:config`
-	Created      string           // `json:created`
-	History      []map[string]any // `json:history`
-	OS           string           // `json:os`
-	Digest       string           `json:"-"`
-	ID           string           `json:"-"`
-	Size         int64            `json:"-"`
+	Image  oci.Image
+	Digest string
+	ID     string
+	Size   int64
 }
 
 // Get digest if not available
@@ -51,7 +47,7 @@ func (r *Registry) getDigest(ctx context.Context, repo string, ref string, data 
 }
 
 // Get Info from manifest
-func (r *Registry) getInfo(ctx context.Context, m schema2.Manifest, header http.Header, repo string, ref string, more bool) (*Info, error) {
+func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Header, repo string, ref string, more bool) (*Info, error) {
 	if m.Versioned.SchemaVersion != 2 {
 		err := errors.New("invalid schema version")
 		return nil, err
@@ -97,7 +93,10 @@ func (r *Registry) getInfo(ctx context.Context, m schema2.Manifest, header http.
 // GetInfo from manifest
 func (r *Registry) GetInfo(ctx context.Context, repo string, ref string, more bool) (*Info, error) {
 	url := r.url("/v2/%s/manifests/%s", repo, ref)
-	headers := []*header{{"Accept", schema2.MediaTypeManifest}}
+	headers := []*header{
+		{"Accept", schema2.MediaTypeManifest},
+		{"Accept", oci.MediaTypeImageManifest},
+	}
 	resp, err := r.httpGet(ctx, url, headers)
 	if err != nil {
 		return nil, err
@@ -109,12 +108,12 @@ func (r *Registry) GetInfo(ctx context.Context, repo string, ref string, more bo
 		return nil, err
 	}
 
-	var m schema2.Manifest
+	var m oci.Manifest
 	if err := json.Unmarshal(data, &m); err != nil {
 		return nil, err
 	}
 
-	info, err := r.getInfo(ctx, m, resp.Header, repo, ref, more)
+	info, err := r.getInfo(ctx, &m, resp.Header, repo, ref, more)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +130,9 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more
 	url := r.url("/v2/%s/manifests/%s", repo, ref)
 	headers := []*header{
 		{"Accept", manifestlist.MediaTypeManifestList},
+		{"Accept", oci.MediaTypeImageIndex},
 		{"Accept", schema2.MediaTypeManifest},
+		{"Accept", oci.MediaTypeImageManifest},
 	}
 	resp, err := r.httpGet(ctx, url, headers)
 	if err != nil {
@@ -144,18 +145,18 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more
 		return nil, err
 	}
 
-	var m manifestlist.ManifestList
+	var m oci.Index
 	if resp.Header.Get("Content-Type") == manifestlist.MediaTypeManifestList {
 		if err := json.Unmarshal(data, &m); err != nil {
 			return nil, err
 		}
 	} else if resp.Header.Get("Content-Type") == schema2.MediaTypeManifest {
-		var m schema2.Manifest
+		var m oci.Manifest
 		if err := json.Unmarshal(data, &m); err != nil {
 			return nil, err
 		}
 
-		info, err := r.getInfo(ctx, m, resp.Header, repo, ref, more)
+		info, err := r.getInfo(ctx, &m, resp.Header, repo, ref, more)
 		if err != nil {
 			return nil, err
 		}
@@ -177,7 +178,7 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more
 		// Avoid address being captured in for loop
 		manifest := manifest
 		wg.Add(1)
-		go func(i int, manifest *manifestlist.ManifestDescriptor) {
+		go func(i int, manifest *oci.Descriptor) {
 			defer wg.Done()
 			info, err := r.GetInfo(ctx, repo, manifest.Digest.String(), more)
 			if err != nil {
@@ -185,8 +186,6 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more
 				return
 			}
 			info.Digest = d.String()
-			info.Architecture = manifest.Platform.Architecture
-			info.OS = manifest.Platform.OS
 			infos[i] = info
 		}(i, &manifest)
 	}

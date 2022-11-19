@@ -205,13 +205,13 @@ func printInfo(repo string, tag string, info *registry.Info) {
 	}
 	if opts.verbose {
 		if opts.raw {
-			fmt.Printf("  %-31s", info.Created)
+			fmt.Printf("  %-31s", info.Image.Created.String())
 		} else {
-			fmt.Printf("  %-31s", prettyTime(info.Created))
+			fmt.Printf("  %-31s", prettyTime(info.Image.Created))
 		}
 	}
 	if opts.all {
-		fmt.Printf("  %-8s  %s", info.OS, info.Architecture)
+		fmt.Printf("  %-8s  %s", info.Image.OS, info.Image.Architecture)
 	}
 	fmt.Println()
 }
@@ -228,53 +228,67 @@ func printImage(ctx context.Context, domain string, image string) {
 		log.Fatalf("%s %s: %v\n", repo, ref, err)
 	}
 	for _, info := range infos {
-		format := "%-20s\t%s\n"
-		if info.Author != "" {
-			fmt.Printf(format, "Author", info.Author)
+		format := "%-20s\t%q\n"
+		if info.Image.Author != "" {
+			fmt.Printf(format, "Author", info.Image.Author)
 		}
-		if info.Architecture != "" {
-			fmt.Printf(format, "Architecture", info.Architecture)
+		if info.Image.Architecture != "" {
+			fmt.Printf(format, "Architecture", info.Image.Architecture)
 		}
-		if info.OS != "" {
-			fmt.Printf(format, "OS", info.OS)
+		if info.Image.OS != "" {
+			fmt.Printf(format, "OS", info.Image.OS)
 		}
 		if info.Digest != "" {
 			fmt.Printf(format, "Digest", info.Digest)
 		}
 		fmt.Printf(format, "Id", info.ID)
 		if opts.raw {
-			if info.Created != "" {
-				fmt.Printf(format, "Created", info.Created)
+			if info.Image.Created != nil {
+				fmt.Printf(format, "Created", info.Image.Created.String())
 			}
 			fmt.Printf("%-20s\t%d\n", "Size", info.Size)
 		} else {
-			if info.Created != "" {
-				fmt.Printf(format, "Created", prettyTime(info.Created))
+			if info.Image.Created != nil {
+				fmt.Printf(format, "Created", prettyTime(info.Image.Created))
 			}
 			fmt.Printf(format, "Size", prettySize(info.Size))
 		}
 
 		if opts.verbose {
-			for _, key := range []string{"Cmd", "Entrypoint", "Env", "ExposedPorts", "Healthcheck", "Labels", "OnBuild", "Shell", "StopSignal", "User", "Volumes", "WorkingDir"} {
-				if info.Config[key] == nil {
-					continue
-				}
-				var value string
-				switch info.Config[key].(type) {
-				case string:
-					if info.Config[key] == "" {
-						continue
-					}
-					value = info.Config[key].(string)
-				default:
-					format = "%-20s\t%s\n"
-					b, _ := json.Marshal(info.Config[key])
-					value = string(b)
-				}
-				fmt.Printf(format, key, value)
+			if len(info.Image.Config.Cmd) > 0 {
+				fmt.Printf(format, "Cmd", info.Image.Config.Cmd)
 			}
-			for i := range info.History {
-				fmt.Printf("History[%d]\t\t%q\n", i, info.History[i]["created_by"])
+			if len(info.Image.Config.Entrypoint) > 0 {
+				fmt.Printf(format, "Entrypoint", info.Image.Config.Entrypoint)
+			}
+			var ports []string
+			for port := range info.Image.Config.ExposedPorts {
+				ports = append(ports, port)
+			}
+			if len(ports) > 0 {
+				fmt.Printf(format, "ExposedPorts", ports)
+			}
+			if len(info.Image.Config.Labels) > 0 {
+				fmt.Printf(format, "Labels", info.Image.Config.Labels)
+			}
+			if info.Image.Config.StopSignal != "" {
+				fmt.Printf(format, "StopSignal", info.Image.Config.StopSignal)
+			}
+			if info.Image.Config.User != "" {
+				fmt.Printf(format, "User", info.Image.Config.User)
+			}
+			var volumes []string
+			for volume := range info.Image.Config.Volumes {
+				volumes = append(volumes, volume)
+			}
+			if len(volumes) > 0 {
+				fmt.Printf(format, "Volumes", volumes)
+			}
+			if info.Image.Config.WorkingDir != "" {
+				fmt.Printf(format, "WorkingDir", info.Image.Config.WorkingDir)
+			}
+			for i := range info.Image.History {
+				fmt.Printf("History[%d]\t\t%q\n", i, info.Image.History[i].CreatedBy)
 			}
 		}
 		fmt.Println()
