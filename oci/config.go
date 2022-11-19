@@ -1,3 +1,5 @@
+//go:generate easyjson -all -disable_members_unescape $GOFILE
+
 // Copyright 2016 The Linux Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +22,8 @@ import (
 )
 
 // ImageConfig defines the execution parameters which should be used as a base when running a container using an image.
+//
+//easyjson:skip
 type ImageConfig struct {
 	// User defines the username or UID which the process in the container should run as.
 	User string `json:"User,omitempty"`
@@ -61,6 +65,8 @@ type RootFS struct {
 */
 
 // History describes the history of a layer.
+//
+//easyjson:skip
 type History struct {
 	// Created is the combined date and time at which the layer was created, formatted as defined by RFC 3339, section 5.6.
 	Created *time.Time `json:"created,omitempty"`
