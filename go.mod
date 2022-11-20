@@ -23,6 +23,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/ricardobranco777/simplepki v0.0.0-20221120194959-657eaa01a347 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 )
