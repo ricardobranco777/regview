@@ -64,8 +64,8 @@ Steps:
 1. Restart the registry container in production mode.
 
 NOTES:
-- The `-m` (`--delete-untagged`) option was added to Docker Registry 2.7.0
-- The `-m` (`--delete-untagged`) option is [BUGGY](https://github.com/distribution/distribution/issues/3178) with multi-arch images. The only workaround is to push those images adding the os/arch name to the image name.
+- The `--delete-untagged` option was added to Docker Registry 2.7.0
+- The `--delete-untagged` option is [BUGGY](https://github.com/distribution/distribution/issues/3178) with multi-arch images. The only workaround is to  push those images adding the os/arch name to the image name.
 - USE AT YOUR OWN RISK!
 
 ## Podman
