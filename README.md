@@ -74,10 +74,6 @@ To use with [Podman](https://podman.io/):
 
 `alias podman=docker`
 
-## Bugs / Limitations
-
-- Goroutines can easily DDOS a large production server.
-
 ## TODO
 
 - Add tests.
