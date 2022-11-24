@@ -189,6 +189,7 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more
 				return
 			}
 			info.Digest = d.String()
+			info.Ref = ref
 			infos[i] = info
 		}(i, &manifest)
 	}
