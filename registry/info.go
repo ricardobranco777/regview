@@ -22,6 +22,8 @@ type Info struct {
 	Image  oci.Image
 	Digest string
 	ID     string
+	Repo   string
+	Ref    string
 	Size   int64
 }
 
@@ -53,7 +55,9 @@ func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Hea
 	}
 
 	info := &Info{
-		ID: m.Config.Digest.String(),
+		Repo: repo,
+		Ref:  ref,
+		ID:   m.Config.Digest.String(),
 	}
 
 	for _, layer := range m.Layers {

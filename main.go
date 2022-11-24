@@ -23,11 +23,30 @@ import (
 	"github.com/ricardobranco777/regview/repoutils"
 	"golang.org/x/exp/slices"
 	"mvdan.cc/sh/v3/pattern"
+
+	concurrently "github.com/tejzpr/ordered-concurrently/v3"
 )
 
 import flag "github.com/spf13/pflag"
 
 const version = "2.9"
+
+type loadWorker struct {
+	reg  *registry.Registry
+	repo string
+	tag  string
+}
+
+func (w *loadWorker) Run(ctx context.Context) any {
+	infos, err := getInfos(ctx, w.reg, w.repo, w.tag)
+	if err != nil {
+		log.Printf("%s:%s: %v\n", w.repo, w.tag, err)
+	}
+	return infos
+}
+
+// ContextKey type for contexts
+type ContextKey string
 
 var opts struct {
 	all      bool
@@ -51,9 +70,6 @@ var opts struct {
 }
 
 var repoWidth int
-
-// ContextKey type for contexts
-type ContextKey string
 
 func init() {
 	log.SetFlags(0)
@@ -163,11 +179,15 @@ func createRegistryClient(ctx context.Context, domain string) (*registry.Registr
 
 func getInfos(ctx context.Context, r *registry.Registry, repo string, ref string) (infos []*registry.Info, err error) {
 	if opts.all {
-		return r.GetInfoAll(ctx, repo, ref, opts.all || opts.verbose, opts.arch, opts.os)
+		infos, err = r.GetInfoAll(ctx, repo, ref, opts.all || opts.verbose, opts.arch, opts.os)
+		if err != nil {
+			return []*registry.Info{}, err
+		}
+		return infos, nil
 	}
 	info, err := r.GetInfo(ctx, repo, ref, opts.verbose)
 	if err != nil {
-		return nil, err
+		return []*registry.Info{}, err
 	}
 	return []*registry.Info{info}, err
 }
@@ -191,8 +211,8 @@ func printHeader() {
 	fmt.Println()
 }
 
-func printInfo(repo string, tag string, info *registry.Info) {
-	fmt.Printf("%-*s", repoWidth+20, repo+":"+tag)
+func printInfo(info *registry.Info) {
+	fmt.Printf("%-*s", repoWidth+20, info.Repo+":"+info.Ref)
 	if opts.digests {
 		fmt.Printf("  %-72s", info.Digest)
 	}
@@ -312,63 +332,31 @@ func printAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.Re
 	sort.Strings(repos)
 
 	repoWidth = getMax(repos)
-
-	channels := make([]chan []string, len(repos))
-	for i := range repos {
-		channels[i] = make(chan []string)
-	}
-
-	go func() {
-		var wg sync.WaitGroup
-		wg.Add(len(repos))
-		for i, repo := range repos {
-			go func(repo string, channel chan []string) {
-				defer wg.Done()
-				tags, err := r.Tags(ctx, repo)
-				if err != nil {
-					log.Printf("Get tags of [%s] error: %s\n", repo, err)
-				} else {
-					tags = filterRegex(tags, tagRegex)
-					sort.Strings(tags)
-					channel <- tags
-				}
-				close(channel)
-			}(repo, channels[i])
-		}
-		wg.Wait()
-	}()
-
 	printHeader()
 
-	for i, repo := range repos {
-		tags := <-channels[i]
-		channels2 := make([]chan *registry.Info, len(tags))
-		for i := range tags {
-			channels2[i] = make(chan *registry.Info)
+	max := 30
+	inputChan := make(chan concurrently.WorkFunction)
+	output := concurrently.Process(ctx, inputChan, &concurrently.Options{PoolSize: max, OutChannelBuffer: max})
+
+	go func() {
+		for _, repo := range repos {
+			tags, err := r.Tags(ctx, repo)
+			if err != nil {
+				log.Printf("Get tags of [%s] error: %s\n", repo, err)
+				continue
+			}
+			sort.Strings(tags)
+			for _, tag := range tags {
+				inputChan <- &loadWorker{reg: r, repo: repo, tag: tag}
+			}
 		}
-		go func() {
-			var wg sync.WaitGroup
-			wg.Add(len(tags))
-			for i, tag := range tags {
-				go func(repo string, tag string, channel2 chan *registry.Info) {
-					defer wg.Done()
-					infos, err := getInfos(ctx, r, repo, tag)
-					if err != nil {
-						log.Printf("%s:%s: %v\n", repo, tag, err)
-					} else {
-						for _, info := range infos {
-							channel2 <- info
-						}
-					}
-					close(channel2)
-				}(repo, tag, channels2[i])
-			}
-			wg.Wait()
-		}()
-		for i, tag := range tags {
-			for info := range channels2[i] {
-				printInfo(repo, tag, info)
-			}
+		close(inputChan)
+	}()
+
+	for out := range output {
+		infos := out.Value.([]*registry.Info)
+		for _, info := range infos {
+			printInfo(info)
 		}
 	}
 }
