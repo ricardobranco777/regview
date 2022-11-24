@@ -73,6 +73,36 @@ func printInfo(info *registry.Info) {
 	fmt.Println()
 }
 
+func printIt(format string, name string, it any) {
+	var value string
+
+	switch v := it.(type) {
+	case string:
+		if v == "" {
+			return
+		}
+		value = v
+	case []string:
+		if len(v) == 0 {
+			return
+		}
+		b, _ := json.Marshal(v)
+		value = string(b)
+	case map[string]struct{}:
+		var ss []string
+		for s := range v {
+			ss = append(ss, s)
+		}
+		b, _ := json.Marshal(ss)
+		value = string(b)
+	default:
+		b, _ := json.Marshal(v)
+		value = string(b)
+	}
+
+	fmt.Printf(format, name, value)
+}
+
 func printImage(ctx context.Context, domain string, image string) {
 	r, err := createRegistryClient(ctx, domain)
 	if err != nil {
@@ -85,67 +115,35 @@ func printImage(ctx context.Context, domain string, image string) {
 		log.Fatalf("%s %s: %v\n", repo, ref, err)
 	}
 	for _, info := range infos {
-		format := "%-20s\t%q\n"
-		if info.Image.Author != "" {
-			fmt.Printf(format, "Author", info.Image.Author)
-		}
-		if info.Image.Architecture != "" {
-			fmt.Printf(format, "Architecture", info.Image.Architecture)
-		}
-		if info.Image.OS != "" {
-			fmt.Printf(format, "OS", info.Image.OS)
-		}
-		if info.Digest != "" {
-			fmt.Printf(format, "Digest", info.Digest)
-		}
-		fmt.Printf(format, "Id", info.ID)
+		format := "%-20s\t%s\n"
+		printIt(format, "Author", info.Image.Author)
+		printIt(format, "Architecture", info.Image.Architecture)
+		printIt(format, "OS", info.Image.OS)
+		printIt(format, "Digest", info.Digest)
+		printIt(format, "Id", info.ID)
 		if opts.raw {
 			if info.Image.Created != nil {
-				fmt.Printf(format, "Created", info.Image.Created.String())
+				printIt(format, "Created", info.Image.Created.String())
 			}
-			fmt.Printf("%-20s\t%d\n", "Size", info.Size)
+			printIt("%-20s\t%d\n", "Size", info.Size)
 		} else {
 			if info.Image.Created != nil {
-				fmt.Printf(format, "Created", prettyTime(info.Image.Created))
+				printIt(format, "Created", prettyTime(info.Image.Created))
 			}
-			fmt.Printf(format, "Size", prettySize(info.Size))
+			printIt(format, "Size", prettySize(info.Size))
 		}
 
 		if opts.verbose {
-			if len(info.Image.Config.Cmd) > 0 {
-				fmt.Printf(format, "Cmd", info.Image.Config.Cmd)
-			}
-			if len(info.Image.Config.Entrypoint) > 0 {
-				fmt.Printf(format, "Entrypoint", info.Image.Config.Entrypoint)
-			}
-			var ports []string
-			for port := range info.Image.Config.ExposedPorts {
-				ports = append(ports, port)
-			}
-			if len(ports) > 0 {
-				fmt.Printf(format, "ExposedPorts", ports)
-			}
-			if len(info.Image.Config.Labels) > 0 {
-				fmt.Printf(format, "Labels", info.Image.Config.Labels)
-			}
-			if info.Image.Config.StopSignal != "" {
-				fmt.Printf(format, "StopSignal", info.Image.Config.StopSignal)
-			}
-			if info.Image.Config.User != "" {
-				fmt.Printf(format, "User", info.Image.Config.User)
-			}
-			var volumes []string
-			for volume := range info.Image.Config.Volumes {
-				volumes = append(volumes, volume)
-			}
-			if len(volumes) > 0 {
-				fmt.Printf(format, "Volumes", volumes)
-			}
-			if info.Image.Config.WorkingDir != "" {
-				fmt.Printf(format, "WorkingDir", info.Image.Config.WorkingDir)
-			}
+			printIt(format, "Cmd", info.Image.Config.Cmd)
+			printIt(format, "Entrypoint", info.Image.Config.Entrypoint)
+			printIt(format, "ExposedPorts", info.Image.Config.ExposedPorts)
+			printIt(format, "Labels", info.Image.Config.Labels)
+			printIt(format, "StopSignal", info.Image.Config.StopSignal)
+			printIt(format, "User", info.Image.Config.User)
+			printIt(format, "Volumes", info.Image.Config.Volumes)
+			printIt(format, "WorkingDir", info.Image.Config.WorkingDir)
 			for i := range info.Image.History {
-				fmt.Printf("History[%d]\t\t%q\n", i, info.Image.History[i].CreatedBy)
+				fmt.Printf("History[%d]\t\t%s\n", i, info.Image.History[i].CreatedBy)
 			}
 		}
 		fmt.Println()
