@@ -44,14 +44,6 @@ func TestGetAuthConfig(t *testing.T) {
 			config:    types.AuthConfig{},
 		},
 		{
-			name:      "empty config with docker.io",
-			registry:  "docker.io",
-			configdir: "testdata/empty",
-			config: types.AuthConfig{
-				ServerAddress: DefaultDockerRegistry,
-			},
-		},
-		{
 			name:      "empty config with registry",
 			registry:  "r.j3ss.co",
 			configdir: "testdata/empty",
@@ -105,15 +97,6 @@ func TestGetAuthConfig(t *testing.T) {
 			configdir: "testdata/valid",
 			config: types.AuthConfig{
 				ServerAddress: "otherreg.j3ss.co",
-			},
-		},
-		{
-			name:      "valid and no registry passed",
-			configdir: "testdata/singlevalid",
-			config: types.AuthConfig{
-				ServerAddress: "https://index.docker.io/v1/",
-				Username:      "user",
-				Password:      "thing\n",
 			},
 		},
 	}
