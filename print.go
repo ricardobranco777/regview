@@ -171,10 +171,8 @@ func printAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.Re
 	repoWidth = getMax(repos)
 	printHeader()
 
-	// TODO: Tune
-	max := 30
 	inputChan := make(chan concurrently.WorkFunction)
-	output := concurrently.Process(ctx, inputChan, &concurrently.Options{PoolSize: max, OutChannelBuffer: max})
+	output := concurrently.Process(ctx, inputChan, &concurrently.Options{PoolSize: maxWorkers, OutChannelBuffer: maxWorkers})
 
 	go func() {
 		for _, repo := range repos {
