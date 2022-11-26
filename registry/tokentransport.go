@@ -77,7 +77,6 @@ func (t *TokenTransport) auth(ctx context.Context, authService *authService) (st
 	if err != nil {
 		return "", nil, err
 	}
-	dump(authReq)
 
 	c := http.Client{
 		Transport: t.Transport,
@@ -149,7 +148,6 @@ func (r *Registry) Token(ctx context.Context, url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dump(req)
 
 	client := http.DefaultClient
 	if r.Opt.Insecure {
@@ -191,7 +189,6 @@ func (r *Registry) Token(ctx context.Context, url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dump(authReq)
 	resp, err = http.DefaultClient.Do(authReq.WithContext(ctx))
 	if err != nil {
 		return "", err

@@ -35,7 +35,6 @@ func (r *Registry) httpMethod(ctx context.Context, url string, headers []*header
 	for _, h := range headers {
 		req.Header.Add(h.key, h.value)
 	}
-	dump(req)
 
 	resp, err := r.Client.Do(req.WithContext(ctx))
 	if err != nil {

@@ -8,29 +8,22 @@ import (
 	"os"
 )
 
-func dump(it interface{}) {
-	var dump []byte
-	var err error
-
-	if !debug {
+func dump(resp *http.Response) {
+	if !debug || resp == nil {
 		return
 	}
 
-	switch data := it.(type) {
-	case *http.Request:
-		if data == nil {
-			return
-		}
-		dump, err = httputil.DumpRequestOut(data, true)
-	case *http.Response:
-		if data == nil {
-			return
-		}
-		dump, err = httputil.DumpResponse(data, true)
-	}
+	dump, err := httputil.DumpRequestOut(resp.Request, true)
 	if err != nil {
 		log.Print(err)
+	} else {
+		fmt.Fprintf(os.Stderr, "\n%s", string(dump))
 	}
 
-	fmt.Fprintf(os.Stderr, "\n%s\n", string(dump))
+	dump, err = httputil.DumpResponse(resp, true)
+	if err != nil {
+		log.Print(err)
+	} else {
+		fmt.Fprintf(os.Stderr, "\n%s\n", string(dump))
+	}
 }
