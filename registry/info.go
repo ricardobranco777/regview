@@ -76,10 +76,7 @@ func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Hea
 	defer layer.Close()
 
 	data, err := io.ReadAll(layer)
-	if err != nil {
-		return nil, err
-	}
-	if err := apiError(data); err != nil {
+	if err := apiError(data, err); err != nil {
 		return nil, err
 	}
 
@@ -104,10 +101,7 @@ func (r *Registry) GetInfo(ctx context.Context, repo string, ref string, more bo
 	defer resp.Body.Close()
 
 	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if err := apiError(data); err != nil {
+	if err := apiError(data, err); err != nil {
 		return nil, err
 	}
 
@@ -144,10 +138,7 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more
 	defer resp.Body.Close()
 
 	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if err := apiError(data); err != nil {
+	if err := apiError(data, err); err != nil {
 		return nil, err
 	}
 
