@@ -24,7 +24,10 @@ type loadWorker struct {
 func (w *loadWorker) Run(ctx context.Context) any {
 	infos, err := getInfos(ctx, w.reg, w.repo, w.tag)
 	if err != nil {
-		log.Printf("%s:%s: %v\n", w.repo, w.tag, err)
+		// Ignore this error that can happen when manifests may be available but not for this platform
+		if err.Error() != "MANIFEST_UNKNOWN" {
+			log.Printf("%s:%s: %v\n", w.repo, w.tag, err)
+		}
 	}
 	return infos
 }
