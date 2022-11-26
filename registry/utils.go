@@ -2,6 +2,7 @@ package registry
 
 import (
 	"context"
+	"errors"
 	"net/http"
 )
 
@@ -41,6 +42,10 @@ func (r *Registry) httpMethod(ctx context.Context, url string, headers []*header
 		return nil, err
 	}
 	dump(resp)
+
+	if resp.StatusCode >= 400 {
+		return nil, errors.New(resp.Status)
+	}
 
 	return resp, nil
 }
