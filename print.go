@@ -179,6 +179,7 @@ func printAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.Re
 				log.Printf("Get tags of [%s] error: %s\n", repo, err)
 				continue
 			}
+			tags = filterRegex(tags, tagRegex)
 			sort.Strings(tags)
 			for _, tag := range tags {
 				inputChan <- &loadWorker{reg: r, repo: repo, tag: tag}
