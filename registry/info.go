@@ -2,7 +2,6 @@ package registry
 
 import (
 	"context"
-	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -49,11 +48,6 @@ func (r *Registry) getDigest(ctx context.Context, repo string, ref string, data 
 
 // Get Info from manifest
 func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Header, repo string, ref string, more bool) (*Info, error) {
-	if m.Versioned.SchemaVersion != 2 {
-		err := errors.New("invalid schema version")
-		return nil, err
-	}
-
 	info := &Info{
 		Repo: repo,
 		Ref:  ref,
