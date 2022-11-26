@@ -2,14 +2,12 @@ package registry
 
 import (
 	"context"
+	"io"
 	"net/url"
 
 	"github.com/peterhellberg/link"
+	"github.com/ricardobranco777/regview/oci"
 )
-
-type tagsResponse struct {
-	Tags []string `json:"tags"`
-}
 
 func (r *Registry) tags(ctx context.Context, u string, repository string) ([]string, error) {
 	var uri string
@@ -19,13 +17,27 @@ func (r *Registry) tags(ctx context.Context, u string, repository string) ([]str
 		uri = r.url(u)
 	}
 
-	var response tagsResponse
-	h, err := r.getJSON(ctx, uri, &response)
+	resp, err := r.httpGet(ctx, uri, nil)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
-	for _, l := range link.ParseHeader(h) {
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if err := apiError(data); err != nil {
+		return nil, err
+	}
+
+	var response oci.TagList
+
+	if err := response.UnmarshalJSON(data); err != nil {
+		return nil, err
+	}
+
+	for _, l := range link.ParseHeader(resp.Header) {
 		if l.Rel == "next" {
 			unescaped, _ := url.QueryUnescape(l.URI)
 			tags, err := r.tags(ctx, unescaped, repository)

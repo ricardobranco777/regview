@@ -2,15 +2,12 @@ package registry
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/distribution/distribution/manifest/manifestlist"
-	"github.com/distribution/distribution/manifest/schema2"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/go-connections/tlsconfig"
 )
@@ -129,28 +126,4 @@ func (r *Registry) url(pathTemplate string, args ...interface{}) string {
 	pathSuffix := fmt.Sprintf(pathTemplate, args...)
 	url := fmt.Sprintf("%s%s", r.URL, pathSuffix)
 	return url
-}
-
-func (r *Registry) getJSON(ctx context.Context, url string, response interface{}) (http.Header, error) {
-	var mediaType string
-	switch response.(type) {
-	case *schema2.Manifest:
-		mediaType = schema2.MediaTypeManifest
-	case *manifestlist.ManifestList:
-		mediaType = manifestlist.MediaTypeManifestList
-	}
-
-	headers := []*header{{"Accept", mediaType}}
-
-	resp, err := r.httpGet(ctx, url, headers)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if err := json.NewDecoder(resp.Body).Decode(response); err != nil {
-		return nil, err
-	}
-
-	return resp.Header, nil
 }
