@@ -99,6 +99,9 @@ func printIt(format string, name string, it any) {
 		for s := range v {
 			ss = append(ss, s)
 		}
+		if len(ss) == 0 {
+			return
+		}
 		b, _ := json.Marshal(ss)
 		value = string(b)
 	default:
