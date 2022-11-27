@@ -10,4 +10,4 @@ jobs:
         uses: docker://golang:latest
         with:
           entrypoint: bash
-          args: -c "go get honnef.co/go/tools/cmd/staticcheck && go get golang.org/x/lint/golint && go get github.com/mailru/easyjson && go install github.com/mailru/easyjson/...@latest && make all"
+          args: -c "go install honnef.co/go/tools/cmd/staticcheck@latest && go install github.com/mailru/easyjson/...@latest && make all"

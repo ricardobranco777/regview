@@ -31,19 +31,12 @@ static: prebuild ## Builds a static executable.
 	@echo "+ $@"
 	CGO_ENABLED=$(CGO_ENABLED) $(GO) build ${GO_LDFLAGS_STATIC} -o $(NAME) .
 
-all: clean build fmt lint test staticcheck vet install ## Runs a clean, build, fmt, lint, test, staticcheck, vet and install.
+all: clean build fmt test staticcheck vet install ## Runs a clean, build, fmt, test, staticcheck, vet and install.
 
 .PHONY: fmt
 fmt: ## Verifies all files have been `gofmt`ed.
 	@echo "+ $@"
 	@if [[ ! -z "$(shell gofmt -s -l . | tee /dev/stderr)" ]]; then \
-		exit 1; \
-	fi
-
-.PHONY: lint
-lint: ## Verifies `golint` passes.
-	@echo "+ $@"
-	@if [[ ! -z "$(shell golint ./... | tee /dev/stderr)" ]]; then \
 		exit 1; \
 	fi
 
