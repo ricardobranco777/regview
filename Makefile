@@ -128,3 +128,4 @@ help:
 
 .PHONY: prebuild
 prebuild:
+	@go generate -x ./...
