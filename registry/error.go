@@ -17,7 +17,11 @@ func apiError(data []byte, err error) error {
 		if err := apiErr.UnmarshalJSON(data); err != nil {
 			return err
 		}
-		return errors.New(apiErr.Errors[0].Code)
+		str := apiErr.Errors[0].Code
+		if apiErr.Errors[0].Message != "" {
+			str += ": " + apiErr.Errors[0].Message
+		}
+		return errors.New(str)
 	}
 	return nil
 }
