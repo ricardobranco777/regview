@@ -74,6 +74,11 @@ func deleteAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.R
 							}
 						}
 					}(repo, tag)
+					// OCI spec allows for deletions of tags
+					fmt.Printf("Deleting %s:%s\n", repo, tag)
+					if !opts.dryRun {
+						r.Delete(ctx, repo, tag)
+					}
 				}
 				wg2.Wait()
 			}(repo)

@@ -8,8 +8,9 @@ import (
 
 // Delete removes a repository digest from the registry.
 // https://docs.docker.com/registry/spec/api/#deleting-an-image
-func (r *Registry) Delete(ctx context.Context, repository string, digest string) (err error) {
-	url := r.url("/v2/%s/manifests/%s", repository, digest)
+// https://github.com/opencontainers/distribution-spec/blob/main/spec.md#deleting-tags
+func (r *Registry) Delete(ctx context.Context, repository string, ref string) (err error) {
+	url := r.url("/v2/%s/manifests/%s", repository, ref)
 	resp, err := r.httpDelete(ctx, url, nil)
 	if err != nil {
 		return err
