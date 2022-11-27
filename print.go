@@ -81,6 +81,7 @@ func printInfo(info *registry.Info) {
 
 func printIt(format string, name string, it any) {
 	var value string
+	var b []byte
 
 	switch v := it.(type) {
 	case string:
@@ -92,23 +93,28 @@ func printIt(format string, name string, it any) {
 		if len(v) == 0 {
 			return
 		}
-		b, _ := json.Marshal(v)
-		value = string(b)
+		b, _ = json.Marshal(v)
 	case map[string]struct{}:
+		if len(v) == 0 {
+			return
+		}
 		var ss []string
 		for s := range v {
 			ss = append(ss, s)
 		}
-		if len(ss) == 0 {
+		b, _ = json.Marshal(ss)
+	case map[string]string:
+		if len(v) == 0 {
 			return
 		}
-		b, _ := json.Marshal(ss)
-		value = string(b)
+		b, _ = json.Marshal(v)
 	default:
-		b, _ := json.Marshal(v)
-		value = string(b)
+		b, _ = json.Marshal(v)
 	}
 
+	if value == "" {
+		value = string(b)
+	}
 	fmt.Printf(format, name, value)
 }
 
