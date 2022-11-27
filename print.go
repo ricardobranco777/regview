@@ -59,15 +59,18 @@ func printInfo(info *registry.Info) {
 	if opts.noTrunc {
 		fmt.Printf("  %-72s", info.ID)
 	} else {
-		//fmt.Printf("  %-12s", strings.TrimPrefix(info.ID, "sha256:")[:12])
 		v := strings.SplitN(info.ID, ":", 2)
 		fmt.Printf("  %-12s", v[1][:12])
 	}
 	if opts.verbose {
-		if opts.raw {
-			fmt.Printf("  %-31s", info.Image.Created.String())
+		if info.Image.Created != nil {
+			if opts.raw {
+				fmt.Printf("  %-31s", info.Image.Created.String())
+			} else {
+				fmt.Printf("  %-31s", prettyTime(info.Image.Created))
+			}
 		} else {
-			fmt.Printf("  %-31s", prettyTime(info.Image.Created))
+			fmt.Printf("  %-31s", "-")
 		}
 	}
 	if opts.all {
