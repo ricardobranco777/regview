@@ -73,6 +73,13 @@ func deleteAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.R
 								r.Delete(ctx, repo, info.Digest)
 							}
 						}
+						// Also delete multi-arch digest
+						if infos[0].DigestAll != infos[0].Digest {
+							fmt.Printf("Deleting %s@%s\n", repo, infos[0].DigestAll)
+							if !opts.dryRun {
+								r.Delete(ctx, repo, infos[0].DigestAll)
+							}
+						}
 					}(repo, tag)
 					// OCI spec allows for deletions of tags
 					fmt.Printf("Deleting %s:%s\n", repo, tag)
