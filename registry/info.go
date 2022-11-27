@@ -77,12 +77,10 @@ func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Hea
 	}
 
 	layer, err := r.DownloadLayer(ctx, repo, m.Config.Digest)
-	if err != nil {
-		return nil, err
-	}
+	//lint:ignore SA5001 should check returned error before deferring layer.Close()
 	defer layer.Close()
 
-	data, err := io.ReadAll(layer)
+	data, _ := io.ReadAll(layer)
 	if err := apiError(data, err); err != nil {
 		return nil, err
 	}
@@ -102,12 +100,10 @@ func (r *Registry) GetInfo(ctx context.Context, repo string, ref string, more bo
 		{"Accept", oci.MediaTypeImageManifest},
 	}
 	resp, err := r.httpGet(ctx, url, headers)
-	if err != nil {
-		return nil, err
-	}
+	//lint:ignore SA5001 should check returned error before deferring resp.Body.Close()
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
+	data, _ := io.ReadAll(resp.Body)
 	if err := apiError(data, err); err != nil {
 		return nil, err
 	}
@@ -139,12 +135,10 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more
 		{"Accept", oci.MediaTypeImageManifest},
 	}
 	resp, err := r.httpGet(ctx, url, headers)
-	if err != nil {
-		return nil, err
-	}
+	//lint:ignore SA5001 should check returned error before deferring resp.Body.Close()
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
+	data, _ := io.ReadAll(resp.Body)
 	if err := apiError(data, err); err != nil {
 		return nil, err
 	}

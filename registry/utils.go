@@ -43,7 +43,7 @@ func (r *Registry) httpMethod(ctx context.Context, url string, headers []*header
 	dump(resp)
 
 	if resp.StatusCode >= 400 {
-		return nil, errors.New(resp.Status)
+		return resp, errors.New(resp.Status)
 	}
 
 	return resp, nil

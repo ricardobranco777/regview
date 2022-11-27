@@ -9,9 +9,6 @@ import (
 
 // Check API error
 func apiError(data []byte, err error) error {
-	if err != nil {
-		return err
-	}
 	if bytes.HasPrefix(data, []byte(`{"errors"`)) {
 		var apiErr oci.ErrorResponse
 		if err := apiErr.UnmarshalJSON(data); err != nil {
@@ -23,5 +20,5 @@ func apiError(data []byte, err error) error {
 		}
 		return errors.New(str)
 	}
-	return nil
+	return err
 }

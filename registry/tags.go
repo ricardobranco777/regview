@@ -24,7 +24,7 @@ func (r *Registry) tags(ctx context.Context, u string, repository string) ([]str
 	defer resp.Body.Close()
 	dump(resp)
 
-	data, err := io.ReadAll(resp.Body)
+	data, _ := io.ReadAll(resp.Body)
 	if err := apiError(data, err); err != nil {
 		return nil, err
 	}
