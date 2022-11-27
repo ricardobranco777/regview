@@ -48,6 +48,27 @@ func (r *Registry) getDigest(ctx context.Context, repo string, ref string, data 
 	return digest.FromBytes(data)
 }
 
+// Get blob with manifest
+func (r *Registry) getBlob(ctx context.Context, repo string, ref digest.Digest) (*oci.Image, error) {
+	url := r.url("/v2/%s/blobs/%s", repo, ref)
+
+	resp, err := r.httpGet(ctx, url, nil)
+	//lint:ignore SA5001 should check returned error before deferring resp.Body.Close()
+	defer resp.Body.Close()
+
+	data, _ := io.ReadAll(resp.Body)
+	if err := apiError(data, err); err != nil {
+		return nil, err
+	}
+
+	var image oci.Image
+	if err := image.UnmarshalJSON(data); err != nil {
+		return nil, err
+	}
+
+	return &image, nil
+}
+
 // Get Info from manifest
 func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Header, repo string, ref string, more bool) (*Info, error) {
 	if m.Versioned.SchemaVersion != 2 {
@@ -76,20 +97,10 @@ func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Hea
 		return info, nil
 	}
 
-	layer, err := r.DownloadLayer(ctx, repo, m.Config.Digest)
-	//lint:ignore SA5001 should check returned error before deferring layer.Close()
-	defer layer.Close()
+	image, err := r.getBlob(ctx, repo, m.Config.Digest)
+	info.Image = *image
 
-	data, _ := io.ReadAll(layer)
-	if err := apiError(data, err); err != nil {
-		return nil, err
-	}
-
-	if err := info.Image.UnmarshalJSON(data); err != nil {
-		return nil, err
-	}
-
-	return info, nil
+	return info, err
 }
 
 // GetInfo from manifest
