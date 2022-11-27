@@ -28,8 +28,8 @@ type Info struct {
 	Size      int64
 }
 
-// Get blob
-func (r *Registry) GetBlob(ctx context.Context, repo string, ref string) (*oci.Image, error) {
+// GetImage gets the image config
+func (r *Registry) GetImage(ctx context.Context, repo string, ref string) (*oci.Image, error) {
 	url := r.url("/v2/%s/blobs/%s", repo, ref)
 	resp, err := r.httpGet(ctx, url, nil)
 	if resp == nil {

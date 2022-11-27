@@ -58,7 +58,7 @@ func deleteAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.R
 				defer wg.Done()
 				tags, err := r.Tags(ctx, repo)
 				if err != nil {
-					log.Printf("Get tags of [%s] error: %s\n", repo, err)
+					log.Printf("ERROR: %s: %s\n", repo, err)
 					return
 				}
 				tags = filterRegex(tags, tagRegex)

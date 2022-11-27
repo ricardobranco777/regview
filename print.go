@@ -24,6 +24,8 @@ type loadWorker struct {
 	tagRegex *regexp.Regexp
 }
 
+var maxWorkers = 10
+
 func (w *loadWorker) Run(ctx context.Context) any {
 	tags, err := w.reg.Tags(ctx, w.repo)
 	if err != nil {
@@ -36,8 +38,8 @@ func (w *loadWorker) Run(ctx context.Context) any {
 	var xinfos []*registry.Info
 	var m sync.Mutex
 	var wg sync.WaitGroup
-	wg.Add(len(tags))
 
+	wg.Add(len(tags))
 	for _, tag := range tags {
 		go func(tag string) {
 			defer wg.Done()
@@ -65,7 +67,7 @@ func (w *loadWorker) Run(ctx context.Context) any {
 	for id := range id2Blob {
 		go func(id string) {
 			defer wg.Done()
-			blob, err := w.reg.GetBlob(ctx, w.repo, id)
+			blob, err := w.reg.GetImage(ctx, w.repo, id)
 			if err != nil {
 				log.Printf("%s@%s: %v\n", w.repo, id, err)
 				return
@@ -168,7 +170,7 @@ func printImage(ctx context.Context, domain string, image string) {
 	repo, ref, _ := repoutils.GetRepoAndRef(image)
 	infos, err := getInfos(ctx, r, repo, ref)
 	if err != nil {
-		log.Fatalf("%s %s: %v\n", repo, ref, err)
+		log.Fatalf("%s: %v\n", image, err)
 	}
 	for _, info := range infos {
 		format := "%-20s\t%s\n"

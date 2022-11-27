@@ -29,8 +29,6 @@ const version = "2.9"
 // ContextKey type for contexts
 type ContextKey string
 
-var maxWorkers = 10
-
 var opts struct {
 	all      bool
 	delete   bool
