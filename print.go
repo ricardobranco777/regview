@@ -123,6 +123,7 @@ func printImage(ctx context.Context, domain string, image string) {
 		printIt(format, "Architecture", info.Image.Architecture)
 		printIt(format, "OS", info.Image.OS)
 		printIt(format, "Digest", info.Digest)
+		printIt(format, "DigestAll", info.DigestAll)
 		printIt(format, "Id", info.ID)
 		if opts.raw {
 			if info.Image.Created != nil {

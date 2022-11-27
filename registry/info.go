@@ -18,12 +18,13 @@ import (
 
 // Info type for interesting information
 type Info struct {
-	Image  oci.Image
-	Digest string
-	ID     string
-	Repo   string
-	Ref    string
-	Size   int64
+	Image     oci.Image
+	Digest    string
+	DigestAll string
+	ID        string
+	Repo      string
+	Ref       string
+	Size      int64
 }
 
 // Get digest if not available
@@ -182,7 +183,7 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more
 				log.Printf("ERROR: %s@%s: %v", repo, manifest.Digest.String(), err)
 				return
 			}
-			info.Digest = d.String()
+			info.DigestAll = d.String()
 			info.Ref = ref
 			infos[i] = info
 		}(i, &manifest)
