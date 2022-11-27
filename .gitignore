@@ -56,4 +56,4 @@ testreg
 server/static/index.html
 server/static/repo/
 
-**/*_easyjson.go
+**/*easyjson*.go
