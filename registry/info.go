@@ -48,7 +48,9 @@ func (r *Registry) getBlob(ctx context.Context, repo string, ref digest.Digest) 
 
 	url := r.url("/v2/%s/blobs/%s", repo, ref)
 	resp, err := r.httpGet(ctx, url, nil)
-	//lint:ignore SA5001 should check returned error before deferring resp.Body.Close()
+	if resp == nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 
 	data, _ := io.ReadAll(resp.Body)
@@ -127,7 +129,9 @@ func (r *Registry) GetInfo(ctx context.Context, repo string, ref string, more bo
 		{"Accept", oci.MediaTypeImageManifest},
 	}
 	resp, err := r.httpGet(ctx, url, headers)
-	//lint:ignore SA5001 should check returned error before deferring resp.Body.Close()
+	if resp == nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 
 	data, _ := io.ReadAll(resp.Body)
@@ -162,7 +166,9 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more
 		{"Accept", oci.MediaTypeImageManifest},
 	}
 	resp, err := r.httpGet(ctx, url, headers)
-	//lint:ignore SA5001 should check returned error before deferring resp.Body.Close()
+	if resp == nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 
 	data, _ := io.ReadAll(resp.Body)

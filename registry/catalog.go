@@ -17,7 +17,9 @@ func (r *Registry) Catalog(ctx context.Context, u string) ([]string, error) {
 	uri := r.url(u)
 
 	resp, err := r.httpGet(ctx, uri, nil)
-	//lint:ignore SA5001 should check returned error before deferring resp.Body.Close()
+	if resp == nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 	dump(resp)
 
