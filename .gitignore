@@ -57,3 +57,4 @@ server/static/index.html
 server/static/repo/
 
 **/*easyjson*.go
+tests/certs/*

@@ -5,9 +5,15 @@ jobs:
     name: make all
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - name: make all
-        uses: docker://golang:latest
-        with:
-          entrypoint: bash
-          args: -c "go install honnef.co/go/tools/cmd/staticcheck@latest && go install github.com/mailru/easyjson/...@latest && make all"
+    - uses: actions/checkout@master
+    - name: make all
+      uses: docker://golang:latest
+      with:
+        entrypoint: bash
+        args: -c "go install honnef.co/go/tools/cmd/staticcheck@latest && go install github.com/mailru/easyjson/...@latest && make all"
+    - uses: actions/setup-go@v3
+    - uses: docker/setup-buildx-action@v2
+    - name: e2e
+      run: |
+        GOBIN=$HOME/.local/bin go install github.com/ricardobranco777/simplepki
+        bash -x tests/e2e.sh

@@ -13,13 +13,14 @@ PATH=.:$PATH
 
 port=$(get_random_port)
 auth_port=$(get_random_port)
+registry_dir=$(mktemp -d)
 name=registry$port
 image=regview
 certs="$PWD/tests/certs"
 user="testuser"
 pass="testpass"
 
-(cd $certs ; simplepki ; htpasswd -Bbn $user $pass > htpasswd)
+(cd $certs ; simplepki ; cat subca.pem ca.pem > cacerts.pem ; htpasswd -Bbn $user $pass > htpasswd)
 
 cleanup () {
 	set +e
@@ -27,6 +28,7 @@ cleanup () {
 	sudo docker rm -vf auth$auth_port
 	sudo docker rmi $image
 	sudo docker rmi $(sudo docker images --format '{{.Repository}}:{{.Tag}}' localhost:$port/*)
+	sudo rm -rf $registry_dir
 	rm -f $PWD/tests/config.json
 }
 
@@ -39,7 +41,7 @@ sudo docker run -d \
 	-p $port:$port \
 	-e REGISTRY_HTTP_ADDR=0.0.0.0:$port \
         -e REGISTRY_STORAGE_DELETE_ENABLED=true \
-	-v /tmp/registry:/var/lib/registry \
+	-v $registry_dir:/var/lib/registry \
 	registry:2
 
 sleep 5
@@ -85,7 +87,7 @@ echo "Testing multi-arch"
 
 regview $options -a http://localhost:$port | grep -q "386$"
 regview $options --arch 386 http://localhost:$port | grep -q "386$"
-test $(regview $options --arch 386 http://localhost:$port | grep -c "amd64$") -eq 0
+regview $options --arch 386 http://localhost:$port | grep -q "amd64$" && false
 
 echo "Testing --delete"
 
@@ -102,7 +104,7 @@ regview $options --delete --dry-run http://localhost:$port/testing:latest
 regview $options --delete --verbose http://localhost:$port/testing:latest
 sudo docker restart $name
 sleep 5
-test $(regview $options http://localhost:$port | grep -c testing) -eq 0
+regview $options http://localhost:$port | grep -q testing && false
 
 unset docker docker_options
 
@@ -120,7 +122,7 @@ sudo docker run -d \
        	-e REGISTRY_HTTP_TLS_KEY=/certs/server.key \
        	-e REGISTRY_HTTP_TLS_CLIENTCAS=" - /certs/cacerts.pem" \
         -e REGISTRY_STORAGE_DELETE_ENABLED=true \
-	-v /tmp/registry:/var/lib/registry \
+	-v $registry_dir:/var/lib/registry \
 	-v $certs:/certs:ro \
 	registry:2
 
@@ -176,7 +178,7 @@ sudo docker run -d \
         -e REGISTRY_AUTH_TOKEN_SERVICE="Docker registry" \
         -e REGISTRY_AUTH_TOKEN_ISSUER="Auth Service" \
         -e REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE=/certs/server.pem \
-        -v /tmp/registry:/var/lib/registry \
+        -v $registry_dir:/var/lib/registry \
         -v $certs:/certs:ro \
         registry:2
 
