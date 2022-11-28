@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -83,31 +84,20 @@ func printIt(format string, name string, it any) {
 	var value string
 	var b []byte
 
+	v := reflect.ValueOf(it)
+	if v.Len() == 0 {
+		return
+	}
+
 	switch v := it.(type) {
 	case string:
-		if v == "" {
-			return
-		}
 		value = v
-	case []string:
-		if len(v) == 0 {
-			return
-		}
-		b, _ = json.Marshal(v)
 	case map[string]struct{}:
-		if len(v) == 0 {
-			return
-		}
 		var ss []string
 		for s := range v {
 			ss = append(ss, s)
 		}
 		b, _ = json.Marshal(ss)
-	case map[string]string:
-		if len(v) == 0 {
-			return
-		}
-		b, _ = json.Marshal(v)
 	default:
 		b, _ = json.Marshal(v)
 	}
