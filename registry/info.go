@@ -11,6 +11,7 @@ import (
 
 	"github.com/distribution/distribution/manifest/manifestlist"
 	"github.com/distribution/distribution/manifest/schema2"
+	"github.com/hashicorp/golang-lru/v2"
 	"github.com/ricardobranco777/regview/oci"
 	"golang.org/x/exp/slices"
 
@@ -19,13 +20,49 @@ import (
 
 // Info type for interesting information
 type Info struct {
-	Image     oci.Image
+	Image     *oci.Image
 	Digest    string
 	DigestAll string
 	ID        string
 	Repo      string
 	Ref       string
 	Size      int64
+}
+
+// LRU cache for blobs that can be shared by many tags
+var cache *lru.Cache[digest.Digest, *oci.Image]
+
+func init() {
+	var err error
+	cache, err = lru.New[digest.Digest, *oci.Image](128)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Get blob
+func (r *Registry) getBlob(ctx context.Context, repo string, ref digest.Digest) (*oci.Image, error) {
+	if image, ok := cache.Get(ref); ok {
+		return image, nil
+	}
+
+	url := r.url("/v2/%s/blobs/%s", repo, ref)
+	resp, err := r.httpGet(ctx, url, nil)
+	//lint:ignore SA5001 should check returned error before deferring resp.Body.Close()
+	defer resp.Body.Close()
+
+	data, _ := io.ReadAll(resp.Body)
+	if err := apiError(data, err); err != nil {
+		return nil, err
+	}
+
+	var image oci.Image
+	if err := image.UnmarshalJSON(data); err != nil {
+		return nil, err
+	}
+
+	cache.Add(ref, &image)
+	return &image, nil
 }
 
 // Get digest if not available
@@ -46,27 +83,6 @@ func (r *Registry) getDigest(ctx context.Context, repo string, ref string, data 
 
 	// Some stupid registries like RedHat's don't return a digest at all
 	return digest.FromBytes(data)
-}
-
-// Get blob with manifest
-func (r *Registry) getBlob(ctx context.Context, repo string, ref digest.Digest) (*oci.Image, error) {
-	url := r.url("/v2/%s/blobs/%s", repo, ref)
-
-	resp, err := r.httpGet(ctx, url, nil)
-	//lint:ignore SA5001 should check returned error before deferring resp.Body.Close()
-	defer resp.Body.Close()
-
-	data, _ := io.ReadAll(resp.Body)
-	if err := apiError(data, err); err != nil {
-		return nil, err
-	}
-
-	var image oci.Image
-	if err := image.UnmarshalJSON(data); err != nil {
-		return nil, err
-	}
-
-	return &image, nil
 }
 
 // Get Info from manifest
@@ -97,8 +113,8 @@ func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Hea
 		return info, nil
 	}
 
-	image, err := r.getBlob(ctx, repo, m.Config.Digest)
-	info.Image = *image
+	var err error
+	info.Image, err = r.getBlob(ctx, repo, m.Config.Digest)
 
 	return info, err
 }

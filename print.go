@@ -121,36 +121,39 @@ func printImage(ctx context.Context, domain string, image string) {
 	}
 	for _, info := range infos {
 		format := "%-20s\t%s\n"
-		printIt(format, "Author", info.Image.Author)
-		printIt(format, "Architecture", info.Image.Architecture)
-		printIt(format, "OS", info.Image.OS)
+		if info.Image != nil {
+			printIt(format, "Author", info.Image.Author)
+			printIt(format, "Architecture", info.Image.Architecture)
+			printIt(format, "OS", info.Image.OS)
+		}
 		printIt(format, "Digest", info.Digest)
 		printIt(format, "DigestAll", info.DigestAll)
 		printIt(format, "Id", info.ID)
 		if opts.raw {
-			if info.Image.Created != nil {
-				printIt(format, "Created", info.Image.Created.String())
-			}
 			printIt("%-20s\t%d\n", "Size", info.Size)
 		} else {
-			if info.Image.Created != nil {
-				printIt(format, "Created", prettyTime(info.Image.Created))
-			}
 			printIt(format, "Size", prettySize(info.Size))
 		}
-
-		if opts.verbose {
-			printIt(format, "Cmd", info.Image.Config.Cmd)
-			printIt(format, "Entrypoint", info.Image.Config.Entrypoint)
-			printIt(format, "ExposedPorts", info.Image.Config.ExposedPorts)
-			printIt(format, "Labels", info.Image.Config.Labels)
-			printIt(format, "StopSignal", info.Image.Config.StopSignal)
-			printIt(format, "User", info.Image.Config.User)
-			printIt(format, "Volumes", info.Image.Config.Volumes)
-			printIt(format, "WorkingDir", info.Image.Config.WorkingDir)
-			for i := range info.Image.History {
-				fmt.Printf("History[%d]\t\t%s\n", i, info.Image.History[i].CreatedBy)
+		if info.Image == nil {
+			continue
+		}
+		if info.Image.Created != nil {
+			if opts.raw {
+				printIt(format, "Created", info.Image.Created.String())
+			} else {
+				printIt(format, "Created", prettyTime(info.Image.Created))
 			}
+		}
+		printIt(format, "Cmd", info.Image.Config.Cmd)
+		printIt(format, "Entrypoint", info.Image.Config.Entrypoint)
+		printIt(format, "ExposedPorts", info.Image.Config.ExposedPorts)
+		printIt(format, "Labels", info.Image.Config.Labels)
+		printIt(format, "StopSignal", info.Image.Config.StopSignal)
+		printIt(format, "User", info.Image.Config.User)
+		printIt(format, "Volumes", info.Image.Config.Volumes)
+		printIt(format, "WorkingDir", info.Image.Config.WorkingDir)
+		for i := range info.Image.History {
+			fmt.Printf("History[%d]\t\t%s\n", i, info.Image.History[i].CreatedBy)
 		}
 		fmt.Println()
 	}
