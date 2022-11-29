@@ -30,18 +30,18 @@ type Info struct {
 }
 
 // LRU cache for blobs that can be shared by many tags
-var cache *lru.Cache[digest.Digest, *oci.Image]
+var cache *lru.Cache[string, *oci.Image]
 
 func init() {
 	var err error
-	cache, err = lru.New[digest.Digest, *oci.Image](128)
+	cache, err = lru.New[string, *oci.Image](128)
 	if err != nil {
 		panic(err)
 	}
 }
 
 // Get blob
-func (r *Registry) getBlob(ctx context.Context, repo string, ref digest.Digest) (*oci.Image, error) {
+func (r *Registry) GetBlob(ctx context.Context, repo string, ref string) (*oci.Image, error) {
 	if image, ok := cache.Get(ref); ok {
 		return image, nil
 	}
@@ -116,7 +116,7 @@ func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Hea
 	}
 
 	var err error
-	info.Image, err = r.getBlob(ctx, repo, m.Config.Digest)
+	info.Image, err = r.GetBlob(ctx, repo, info.ID)
 
 	return info, err
 }
