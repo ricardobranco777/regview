@@ -121,6 +121,11 @@ func init() {
 	}
 
 	if opts.cert != "" && opts.key != "" && opts.keypass == "" {
+		for _, file := range []string{opts.cert, opts.key} {
+			if _, err := os.ReadFile(file); err != nil {
+				log.Fatalf("%s: %v", file, err)
+			}
+		}
 		if _, err := tls.LoadX509KeyPair(opts.cert, opts.key); err != nil {
 			opts.keypass = getPass("Passphrase for %s: ", opts.key)
 		}

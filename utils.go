@@ -12,34 +12,6 @@ import (
 	"golang.org/x/term"
 )
 
-func getMax(ss []string) (max int) {
-	for _, s := range ss {
-		if len(s) > max {
-			max = len(s)
-		}
-	}
-	return
-}
-
-func getPass(prompt string, args ...interface{}) string {
-	fmt.Fprintf(os.Stderr, prompt, args...)
-	pass, err := term.ReadPassword(int(os.Stdin.Fd()))
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Fprintln(os.Stderr)
-	return string(pass)
-}
-
-func prettyTime(t *time.Time) string {
-	tz, _ := time.LoadLocation("Local")
-	return t.In(tz).Format(time.UnixDate)
-}
-
-func prettySize(n int64) string {
-	return units.HumanSize(float64(n))
-}
-
 func filterRegex(ss []string, regex *regexp.Regexp) []string {
 	if regex == nil {
 		return ss
@@ -68,4 +40,32 @@ func getCommit() string {
 	}
 
 	return commit + dirty
+}
+
+func getMax(ss []string) (max int) {
+	for _, s := range ss {
+		if len(s) > max {
+			max = len(s)
+		}
+	}
+	return
+}
+
+func getPass(prompt string, args ...interface{}) string {
+	fmt.Fprintf(os.Stderr, prompt, args...)
+	pass, err := term.ReadPassword(int(os.Stdin.Fd()))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Fprintln(os.Stderr)
+	return string(pass)
+}
+
+func prettySize(n int64) string {
+	return units.HumanSize(float64(n))
+}
+
+func prettyTime(t *time.Time) string {
+	tz, _ := time.LoadLocation("Local")
+	return t.In(tz).Format(time.UnixDate)
 }
