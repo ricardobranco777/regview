@@ -135,7 +135,7 @@ func init() {
 		opts.digests = true
 	}
 
-	if flag.NArg() > 1 {
+	if flag.NArg() != 1 {
 		flag.Usage()
 		os.Exit(1)
 	}
