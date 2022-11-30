@@ -11,7 +11,6 @@ import (
 
 	"github.com/distribution/distribution/manifest/manifestlist"
 	"github.com/distribution/distribution/manifest/schema2"
-	"github.com/hashicorp/golang-lru/v2"
 	"github.com/ricardobranco777/regview/oci"
 	"golang.org/x/exp/slices"
 
@@ -29,23 +28,8 @@ type Info struct {
 	Size      int64
 }
 
-// LRU cache for blobs that can be shared by many tags
-var cache *lru.Cache[string, *oci.Image]
-
-func init() {
-	var err error
-	cache, err = lru.New[string, *oci.Image](128)
-	if err != nil {
-		panic(err)
-	}
-}
-
 // Get blob
 func (r *Registry) GetBlob(ctx context.Context, repo string, ref string) (*oci.Image, error) {
-	if image, ok := cache.Get(ref); ok {
-		return image, nil
-	}
-
 	url := r.url("/v2/%s/blobs/%s", repo, ref)
 	resp, err := r.httpGet(ctx, url, nil)
 	if resp == nil {
@@ -63,7 +47,6 @@ func (r *Registry) GetBlob(ctx context.Context, repo string, ref string) (*oci.I
 		return nil, err
 	}
 
-	cache.Add(ref, &image)
 	return &image, nil
 }
 
@@ -88,7 +71,7 @@ func (r *Registry) getDigest(ctx context.Context, repo string, ref string, data 
 }
 
 // Get Info from manifest
-func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Header, repo string, ref string, more bool) (*Info, error) {
+func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Header, repo string, ref string) (*Info, error) {
 	if m.Versioned.SchemaVersion != 2 {
 		err := errors.New("invalid schema version")
 		return nil, err
@@ -111,18 +94,11 @@ func (r *Registry) getInfo(ctx context.Context, m *oci.Manifest, header http.Hea
 		info.Digest = d.String()
 	}
 
-	if !more {
-		return info, nil
-	}
-
-	var err error
-	info.Image, err = r.GetBlob(ctx, repo, info.ID)
-
-	return info, err
+	return info, nil
 }
 
 // GetInfo from manifest
-func (r *Registry) GetInfo(ctx context.Context, repo string, ref string, more bool) (*Info, error) {
+func (r *Registry) GetInfo(ctx context.Context, repo string, ref string) (*Info, error) {
 	url := r.url("/v2/%s/manifests/%s", repo, ref)
 	headers := []*header{
 		{"Accept", schema2.MediaTypeManifest},
@@ -144,7 +120,7 @@ func (r *Registry) GetInfo(ctx context.Context, repo string, ref string, more bo
 		return nil, err
 	}
 
-	info, err := r.getInfo(ctx, &m, resp.Header, repo, ref, more)
+	info, err := r.getInfo(ctx, &m, resp.Header, repo, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +133,7 @@ func (r *Registry) GetInfo(ctx context.Context, repo string, ref string, more bo
 }
 
 // GetInfoAll from fat manifests and then each manifest
-func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more bool, arches []string, oses []string) ([]*Info, error) {
+func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, arches []string, oses []string) ([]*Info, error) {
 	url := r.url("/v2/%s/manifests/%s", repo, ref)
 	headers := []*header{
 		{"Accept", manifestlist.MediaTypeManifestList},
@@ -187,7 +163,7 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more
 			return nil, err
 		}
 
-		info, err := r.getInfo(ctx, &m, resp.Header, repo, ref, more)
+		info, err := r.getInfo(ctx, &m, resp.Header, repo, ref)
 		if err != nil {
 			return nil, err
 		}
@@ -211,7 +187,7 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, more
 		wg.Add(1)
 		go func(i int, manifest *oci.Descriptor) {
 			defer wg.Done()
-			info, err := r.GetInfo(ctx, repo, manifest.Digest.String(), more)
+			info, err := r.GetInfo(ctx, repo, manifest.Digest.String())
 			if err != nil {
 				log.Printf("ERROR: %s@%s: %v", repo, manifest.Digest.String(), err)
 				return

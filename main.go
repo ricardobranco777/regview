@@ -166,18 +166,28 @@ func createRegistryClient(ctx context.Context, domain string) (*registry.Registr
 }
 
 func getInfos(ctx context.Context, r *registry.Registry, repo string, ref string) (infos []*registry.Info, err error) {
-	if opts.all {
-		infos, err = r.GetInfoAll(ctx, repo, ref, opts.all || opts.verbose, opts.arch, opts.os)
+	// Filter by current arch & OS if neither --all, --arch or --os were specified
+	var arches, oses []string
+	if !opts.all && len(opts.arch) == 0 && len(opts.os) == 0 {
+		arches = []string{runtime.GOARCH}
+		oses = []string{runtime.GOOS}
+	} else {
+		arches = opts.arch
+		oses = opts.os
+	}
+
+	if opts.all || opts.verbose {
+		infos, err = r.GetInfoAll(ctx, repo, ref, arches, oses)
 		if err != nil {
 			return []*registry.Info{}, err
 		}
 		return infos, nil
 	}
-	info, err := r.GetInfo(ctx, repo, ref, opts.verbose)
+	info, err := r.GetInfo(ctx, repo, ref)
 	if err != nil {
 		return []*registry.Info{}, err
 	}
-	return []*registry.Info{info}, err
+	return []*registry.Info{info}, nil
 }
 
 func main() {

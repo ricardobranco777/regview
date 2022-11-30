@@ -9,7 +9,9 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 
+	"github.com/ricardobranco777/regview/oci"
 	"github.com/ricardobranco777/regview/registry"
 	"github.com/ricardobranco777/regview/repoutils"
 
@@ -19,18 +21,60 @@ import (
 type loadWorker struct {
 	reg  *registry.Registry
 	repo string
-	tag  string
+	tags []string
 }
 
 func (w *loadWorker) Run(ctx context.Context) any {
-	infos, err := getInfos(ctx, w.reg, w.repo, w.tag)
-	if err != nil {
-		// Ignore this error that can happen when manifests may be available but not for this platform
-		if err.Error() != "MANIFEST_UNKNOWN" {
-			log.Printf("%s:%s: %v\n", w.repo, w.tag, err)
-		}
+	var xinfos []*registry.Info
+
+	var m sync.Mutex
+	var wg sync.WaitGroup
+	wg.Add(len(w.tags))
+
+	for _, tag := range w.tags {
+		go func(tag string) {
+			defer wg.Done()
+			infos, err := getInfos(ctx, w.reg, w.repo, tag)
+			if err != nil {
+				// Ignore this error that can happen when manifests may be available but not for this platform
+				if err.Error() != "MANIFEST_UNKNOWN" {
+					log.Printf("%s:%s: %v\n", w.repo, tag, err)
+				}
+				return
+			}
+			m.Lock()
+			xinfos = append(xinfos, infos...)
+			m.Unlock()
+		}(tag)
 	}
-	return infos
+	wg.Wait()
+
+	id2Blob := make(map[string]*oci.Image)
+	for _, info := range xinfos {
+		id2Blob[info.ID] = nil
+	}
+
+	wg.Add(len(id2Blob))
+	for id := range id2Blob {
+		go func(id string) {
+			defer wg.Done()
+			blob, err := w.reg.GetBlob(ctx, w.repo, id)
+			if err != nil {
+				log.Printf("%s@%s: %v\n", w.repo, id, err)
+				return
+			}
+			m.Lock()
+			id2Blob[id] = blob
+			m.Unlock()
+		}(id)
+	}
+	wg.Wait()
+
+	for _, info := range xinfos {
+		info.Image = id2Blob[info.ID]
+	}
+
+	return xinfos
 }
 
 func printHeader() {
@@ -190,9 +234,7 @@ func printAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.Re
 			}
 			tags = filterRegex(tags, tagRegex)
 			sort.Strings(tags)
-			for _, tag := range tags {
-				inputChan <- &loadWorker{reg: r, repo: repo, tag: tag}
-			}
+			inputChan <- &loadWorker{reg: r, repo: repo, tags: tags}
 		}
 		close(inputChan)
 	}()
