@@ -19,19 +19,26 @@ import (
 )
 
 type loadWorker struct {
-	reg  *registry.Registry
-	repo string
-	tags []string
+	reg      *registry.Registry
+	repo     string
+	tagRegex *regexp.Regexp
 }
 
 func (w *loadWorker) Run(ctx context.Context) any {
-	var xinfos []*registry.Info
+	tags, err := w.reg.Tags(ctx, w.repo)
+	if err != nil {
+		log.Printf("Get tags of [%s] error: %s\n", w.repo, err)
+		return nil
+	}
+	tags = filterRegex(tags, w.tagRegex)
+	sort.Strings(tags)
 
+	var xinfos []*registry.Info
 	var m sync.Mutex
 	var wg sync.WaitGroup
-	wg.Add(len(w.tags))
+	wg.Add(len(tags))
 
-	for _, tag := range w.tags {
+	for _, tag := range tags {
 		go func(tag string) {
 			defer wg.Done()
 			infos, err := getInfos(ctx, w.reg, w.repo, tag)
@@ -227,14 +234,7 @@ func printAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.Re
 
 	go func() {
 		for _, repo := range repos {
-			tags, err := r.Tags(ctx, repo)
-			if err != nil {
-				log.Printf("Get tags of [%s] error: %s\n", repo, err)
-				continue
-			}
-			tags = filterRegex(tags, tagRegex)
-			sort.Strings(tags)
-			inputChan <- &loadWorker{reg: r, repo: repo, tags: tags}
+			inputChan <- &loadWorker{reg: r, repo: repo, tagRegex: tagRegex}
 		}
 		close(inputChan)
 	}()
