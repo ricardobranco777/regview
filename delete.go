@@ -28,6 +28,11 @@ func deleteImage(ctx context.Context, domain string, image string) {
 			r.Delete(ctx, repo, info.Digest)
 		}
 	}
+	// OCI spec allows for deletions of tags
+	fmt.Printf("Deleting %s %s\n", repo, ref)
+	if !opts.dryRun {
+		r.Delete(ctx, repo, ref)
+	}
 }
 
 func deleteAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.Regexp) {
