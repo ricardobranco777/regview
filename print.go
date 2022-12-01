@@ -15,21 +15,14 @@ import (
 	"github.com/ricardobranco777/regview/registry"
 	"github.com/ricardobranco777/regview/repoutils"
 	"golang.org/x/exp/slices"
-
-	concurrently "github.com/tejzpr/ordered-concurrently/v3"
 )
-
-type loadWorker struct {
-	reg  *registry.Registry
-	repo string
-}
 
 var maxWorkers = 10
 
-func (w *loadWorker) Run(ctx context.Context) any {
-	tags, err := w.reg.Tags(ctx, w.repo)
+func loadWorker(ctx context.Context, r *registry.Registry, repo string) []*registry.Info {
+	tags, err := r.Tags(ctx, repo)
 	if err != nil {
-		log.Printf("%s: %v\n", w.repo, err)
+		log.Printf("%s: %v\n", repo, err)
 		return []*registry.Info{}
 	}
 	tags = filterRegex(tags, tagRegex)
@@ -43,11 +36,11 @@ func (w *loadWorker) Run(ctx context.Context) any {
 	for _, tag := range tags {
 		go func(tag string) {
 			defer wg.Done()
-			infos, err := getInfos(ctx, w.reg, w.repo, tag)
+			infos, err := getInfos(ctx, r, repo, tag)
 			if err != nil {
 				// Ignore this error that can happen when manifests may be available but not for this platform
 				if err.Error() != "MANIFEST_UNKNOWN" {
-					log.Printf("%s:%s: %v\n", w.repo, tag, err)
+					log.Printf("%s:%s: %v\n", repo, tag, err)
 				}
 				return
 			}
@@ -80,9 +73,9 @@ func (w *loadWorker) Run(ctx context.Context) any {
 	for id := range id2Blob {
 		go func(id string) {
 			defer wg.Done()
-			blob, err := w.reg.GetImage(ctx, w.repo, id)
+			blob, err := r.GetImage(ctx, repo, id)
 			if err != nil {
-				log.Printf("%s@%s: %v\n", w.repo, id, err)
+				log.Printf("%s@%s: %v\n", repo, id, err)
 				return
 			}
 			m.Lock()
@@ -338,18 +331,25 @@ func printAll(ctx context.Context, domain string) {
 	repoWidth = getMax(repos)
 	printHeader()
 
-	inputChan := make(chan concurrently.WorkFunction)
-	output := concurrently.Process(ctx, inputChan, &concurrently.Options{PoolSize: maxWorkers, OutChannelBuffer: maxWorkers})
+	channels := make([]chan []*registry.Info, len(repos))
+	for i := range repos {
+		channels[i] = make(chan []*registry.Info)
+	}
+
+	workers := make(chan struct{}, maxWorkers)
 
 	go func() {
-		for _, repo := range repos {
-			inputChan <- &loadWorker{reg: r, repo: repo}
+		for i, repo := range repos {
+			workers <- struct{}{}
+			go func(repo string, channel chan []*registry.Info) {
+				channel <- loadWorker(ctx, r, repo)
+				close(channel)
+			}(repo, channels[i])
 		}
-		close(inputChan)
 	}()
 
-	for out := range output {
-		infos := out.Value.([]*registry.Info)
+	for i := range repos {
+		infos := <-channels[i]
 		for _, info := range infos {
 			if info.Image != nil {
 				// We also have to filter by arch & os because the registry may not return a list
@@ -362,5 +362,6 @@ func printAll(ctx context.Context, domain string) {
 			}
 			printInfo(info)
 		}
+		<-workers
 	}
 }
