@@ -251,7 +251,10 @@ func printAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.Re
 	}()
 
 	for out := range output {
-		infos := out.Value.([]*registry.Info)
+		infos, ok := out.Value.([]*registry.Info)
+		if !ok {
+			continue
+		}
 		for _, info := range infos {
 			// We also have to filter by arch & os because the registry may not return a list
 			if len(opts.arch) > 0 && !slices.Contains(opts.arch, info.Image.Architecture) {
