@@ -25,14 +25,9 @@ EASYJSON = oci/config_easyjson.go oci/error_easyjson.go oci/index_easyjson.go oc
 .PHONY: build
 build: prebuild $(NAME) ## Builds a dynamic executable or package.
 
-$(NAME): $(wildcard *.go) $(wildcard */*.go)
+$(NAME): $(wildcard *.go) $(wildcard */*.go) prebuild
 	@echo "+ $@"
-	$(GO) build ${GO_LDFLAGS} -o $(NAME) .
-
-.PHONY: static
-static: prebuild ## Builds a static executable.
-	@echo "+ $@"
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) build ${GO_LDFLAGS_STATIC} -o $(NAME) .
+	CGO_ENABLED=$(CGO_ENABLED) $(GO) build -o $(NAME) .
 
 all: clean build fmt test staticcheck vet install ## Runs a clean, build, fmt, test, staticcheck, vet and install.
 
@@ -76,15 +71,12 @@ cover: prebuild ## Runs go test with coverage.
 .PHONY: install
 install: prebuild ## Installs the executable or package.
 	@echo "+ $@"
-	$(GO) install -a -tags "$(BUILDTAGS)" ${GO_LDFLAGS} .
+	$(GO) install -a .
 
 define buildpretty
 mkdir -p $(BUILDDIR)/$(1)/$(2);
 GOOS=$(1) GOARCH=$(2) CGO_ENABLED=$(CGO_ENABLED) $(GO) build \
-	 -o $(BUILDDIR)/$(1)/$(2)/$(NAME) \
-	 -a -tags "$(BUILDTAGS) static_build netgo" \
-	 -installsuffix netgo ${GO_LDFLAGS_STATIC} .;
-md5sum $(BUILDDIR)/$(1)/$(2)/$(NAME) > $(BUILDDIR)/$(1)/$(2)/$(NAME).md5;
+	 -a -o $(BUILDDIR)/$(1)/$(2)/$(NAME) .;
 sha256sum $(BUILDDIR)/$(1)/$(2)/$(NAME) > $(BUILDDIR)/$(1)/$(2)/$(NAME).sha256;
 endef
 
@@ -95,10 +87,7 @@ cross: *.go prebuild ## Builds the cross-compiled binaries, creating a clean dir
 
 define buildrelease
 GOOS=$(1) GOARCH=$(2) CGO_ENABLED=$(CGO_ENABLED) $(GO) build \
-	 -o $(BUILDDIR)/$(NAME)-$(1)-$(2) \
-	 -a -tags "$(BUILDTAGS) static_build netgo" \
-	 -installsuffix netgo ${GO_LDFLAGS_STATIC} .;
-md5sum $(BUILDDIR)/$(NAME)-$(1)-$(2) > $(BUILDDIR)/$(NAME)-$(1)-$(2).md5;
+	 -a -o $(BUILDDIR)/$(NAME)-$(1)-$(2) .;
 sha256sum $(BUILDDIR)/$(NAME)-$(1)-$(2) > $(BUILDDIR)/$(NAME)-$(1)-$(2).sha256;
 endef
 
@@ -107,10 +96,6 @@ release: *.go prebuild ## Builds the cross-compiled binaries, naming them in suc
 	@echo "+ $@"
 	$(foreach GOOSARCH,$(GOOSARCHES), $(call buildrelease,$(subst /,,$(dir $(GOOSARCH))),$(notdir $(GOOSARCH))))
 
-.PHONY: image
-image: ## Create the docker image from the Dockerfile.
-	@docker build --rm --force-rm -t $(NAME) .
-
 .PHONY: clean
 clean: ## Cleanup any build binaries or packages.
 	@echo "+ $@"
@@ -118,10 +103,6 @@ clean: ## Cleanup any build binaries or packages.
 	$(RM) -r $(BUILDDIR)
 	$(RM) -f $(EASYJSON)
 	$(RM) -f tests/certs/*
-
-.PHONY: help
-help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | sed 's/^[^:]*://g' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: prebuild
 prebuild: $(EASYJSON)
