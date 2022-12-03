@@ -174,6 +174,7 @@ func printImage(ctx context.Context, domain string, image string) {
 	}
 	for _, info := range infos {
 		format := "%-20s\t%s\n"
+		info.Image, _ = r.GetImage(ctx, repo, info.ID)
 		if info.Image != nil {
 			printIt(format, "Author", info.Image.Author)
 			printIt(format, "Architecture", info.Image.Architecture)
