@@ -59,6 +59,10 @@ func (w *loadWorker) Run(ctx context.Context) any {
 	}
 	wg.Wait()
 
+	if !opts.all && !opts.verbose {
+		return xinfos
+	}
+
 	id2Blob := make(map[string]*oci.Image)
 	for _, info := range xinfos {
 		id2Blob[info.ID] = nil
@@ -175,7 +179,9 @@ func printImage(ctx context.Context, domain string, image string) {
 	}
 	for _, info := range infos {
 		format := "%-20s\t%s\n"
-		info.Image, _ = r.GetImage(ctx, repo, info.ID)
+		if opts.verbose {
+			info.Image, _ = r.GetImage(ctx, repo, info.ID)
+		}
 		// We also have to filter by arch & os because the registry may not return a list
 		if len(opts.arch) > 0 && !slices.Contains(opts.arch, info.Image.Architecture) {
 			continue
@@ -196,26 +202,25 @@ func printImage(ctx context.Context, domain string, image string) {
 		} else {
 			printIt(format, "Size", prettySize(info.Size))
 		}
-		if info.Image == nil {
-			continue
-		}
-		if info.Image.Created != nil {
-			if opts.raw {
-				printIt(format, "Created", info.Image.Created.String())
-			} else {
-				printIt(format, "Created", prettyTime(info.Image.Created))
+		if info.Image != nil {
+			if info.Image.Created != nil {
+				if opts.raw {
+					printIt(format, "Created", info.Image.Created.String())
+				} else {
+					printIt(format, "Created", prettyTime(info.Image.Created))
+				}
 			}
-		}
-		printIt(format, "Cmd", info.Image.Config.Cmd)
-		printIt(format, "Entrypoint", info.Image.Config.Entrypoint)
-		printIt(format, "ExposedPorts", info.Image.Config.ExposedPorts)
-		printIt(format, "Labels", info.Image.Config.Labels)
-		printIt(format, "StopSignal", info.Image.Config.StopSignal)
-		printIt(format, "User", info.Image.Config.User)
-		printIt(format, "Volumes", info.Image.Config.Volumes)
-		printIt(format, "WorkingDir", info.Image.Config.WorkingDir)
-		for i := range info.Image.History {
-			fmt.Printf("History[%d]\t\t%s\n", i, info.Image.History[i].CreatedBy)
+			printIt(format, "Cmd", info.Image.Config.Cmd)
+			printIt(format, "Entrypoint", info.Image.Config.Entrypoint)
+			printIt(format, "ExposedPorts", info.Image.Config.ExposedPorts)
+			printIt(format, "Labels", info.Image.Config.Labels)
+			printIt(format, "StopSignal", info.Image.Config.StopSignal)
+			printIt(format, "User", info.Image.Config.User)
+			printIt(format, "Volumes", info.Image.Config.Volumes)
+			printIt(format, "WorkingDir", info.Image.Config.WorkingDir)
+			for i := range info.Image.History {
+				fmt.Printf("History[%d]\t\t%s\n", i, info.Image.History[i].CreatedBy)
+			}
 		}
 		fmt.Println()
 	}
