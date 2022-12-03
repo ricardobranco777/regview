@@ -14,6 +14,7 @@ import (
 	"github.com/ricardobranco777/regview/oci"
 	"github.com/ricardobranco777/regview/registry"
 	"github.com/ricardobranco777/regview/repoutils"
+	"golang.org/x/exp/slices"
 
 	concurrently "github.com/tejzpr/ordered-concurrently/v3"
 )
@@ -175,6 +176,13 @@ func printImage(ctx context.Context, domain string, image string) {
 	for _, info := range infos {
 		format := "%-20s\t%s\n"
 		info.Image, _ = r.GetImage(ctx, repo, info.ID)
+		// We also have to filter by arch & os because the registry may not return a list
+		if len(opts.arch) > 0 && !slices.Contains(opts.arch, info.Image.Architecture) {
+			continue
+		}
+		if len(opts.os) > 0 && !slices.Contains(opts.os, info.Image.OS) {
+			continue
+		}
 		if info.Image != nil {
 			printIt(format, "Author", info.Image.Author)
 			printIt(format, "Architecture", info.Image.Architecture)
@@ -245,6 +253,13 @@ func printAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.Re
 	for out := range output {
 		infos := out.Value.([]*registry.Info)
 		for _, info := range infos {
+			// We also have to filter by arch & os because the registry may not return a list
+			if len(opts.arch) > 0 && !slices.Contains(opts.arch, info.Image.Architecture) {
+				continue
+			}
+			if len(opts.os) > 0 && !slices.Contains(opts.os, info.Image.OS) {
+				continue
+			}
 			printInfo(info)
 		}
 	}
