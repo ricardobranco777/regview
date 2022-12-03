@@ -7,6 +7,7 @@ import (
 	"log"
 	"reflect"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -89,6 +90,88 @@ func (w *loadWorker) Run(ctx context.Context) any {
 	}
 
 	return xinfos
+}
+
+func createRegistryClient(ctx context.Context, domain string) (*registry.Registry, error) {
+	auth, err := repoutils.GetAuthConfig(opts.username, opts.password, domain)
+	if err != nil {
+		return nil, err
+	}
+
+	// Prevent non-ssl unless explicitly forced
+	if !opts.insecure && strings.HasPrefix(auth.ServerAddress, "http:") {
+		return nil, fmt.Errorf("attempted to use insecure protocol! Use --insecure option to force")
+	}
+
+	return registry.New(ctx, auth, registry.Opt{
+		CAFile:     opts.cacert,
+		CertFile:   opts.cert,
+		KeyFile:    opts.key,
+		Debug:      opts.debug,
+		Digests:    opts.digests,
+		Domain:     domain,
+		Insecure:   opts.insecure,
+		NonSSL:     opts.insecure,
+		Passphrase: opts.keypass,
+	})
+}
+
+func getInfos(ctx context.Context, r *registry.Registry, repo string, ref string) (infos []*registry.Info, err error) {
+	// Filter by current arch & OS if neither --all, --arch or --os were specified
+	var arches, oses []string
+	if !opts.all && len(opts.arch) == 0 && len(opts.os) == 0 {
+		arches = []string{runtime.GOARCH}
+		oses = []string{runtime.GOOS}
+	} else {
+		arches = opts.arch
+		oses = opts.os
+	}
+
+	if opts.all || opts.verbose {
+		infos, err = r.GetInfoAll(ctx, repo, ref, arches, oses)
+		if err != nil {
+			return []*registry.Info{}, err
+		}
+		return infos, nil
+	}
+	info, err := r.GetInfo(ctx, repo, ref)
+	if err != nil {
+		return []*registry.Info{}, err
+	}
+	return []*registry.Info{info}, nil
+}
+
+func deleteImage(ctx context.Context, domain string, image string) {
+	r, err := createRegistryClient(ctx, domain)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	repo, ref, _ := repoutils.GetRepoAndRef(image)
+	infos, err := getInfos(ctx, r, repo, ref)
+	if err != nil {
+		log.Fatalf("%s %s: %v\n", repo, ref, err)
+	}
+	for _, info := range infos {
+		fmt.Printf("Deleting %s@%s\n", repo, info.Digest)
+		if !opts.dryRun {
+			r.Delete(ctx, repo, info.Digest)
+		}
+	}
+	if opts.all {
+		// Also delete multi-arch digest
+		if infos[0].DigestAll != infos[0].Digest {
+			fmt.Printf("Deleting %s@%s\n", infos[0].Repo, infos[0].DigestAll)
+			if !opts.dryRun {
+				r.Delete(ctx, infos[0].Repo, infos[0].DigestAll)
+			}
+		}
+		// OCI spec allows for deletions of tags
+		fmt.Printf("Deleting %s:%s\n", repo, ref)
+		if !opts.dryRun {
+			r.Delete(ctx, repo, ref)
+		}
+	}
 }
 
 func printHeader() {
@@ -178,6 +261,14 @@ func printImage(ctx context.Context, domain string, image string) {
 		log.Fatalf("%s: %v\n", image, err)
 	}
 	for _, info := range infos {
+		if opts.delete {
+			fmt.Printf("Deleting %s@%s\n", repo, info.Digest)
+			if !opts.dryRun {
+				r.Delete(ctx, repo, info.Digest)
+			}
+			continue
+		}
+
 		format := "%-20s\t%s\n"
 		if opts.verbose {
 			info.Image, _ = r.GetImage(ctx, repo, info.ID)
@@ -223,6 +314,13 @@ func printImage(ctx context.Context, domain string, image string) {
 			}
 		}
 		fmt.Println()
+	}
+	if opts.delete {
+		// OCI spec allows for deletions of tags
+		fmt.Printf("Deleting %s %s\n", repo, ref)
+		if !opts.dryRun {
+			r.Delete(ctx, repo, ref)
+		}
 	}
 }
 

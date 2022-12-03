@@ -17,7 +17,6 @@ import (
 	"syscall"
 
 	"github.com/ricardobranco777/regview/registry"
-	"github.com/ricardobranco777/regview/repoutils"
 	"golang.org/x/exp/slices"
 	"mvdan.cc/sh/v3/pattern"
 )
@@ -139,55 +138,6 @@ func init() {
 	}
 }
 
-func createRegistryClient(ctx context.Context, domain string) (*registry.Registry, error) {
-	auth, err := repoutils.GetAuthConfig(opts.username, opts.password, domain)
-	if err != nil {
-		return nil, err
-	}
-
-	// Prevent non-ssl unless explicitly forced
-	if !opts.insecure && strings.HasPrefix(auth.ServerAddress, "http:") {
-		return nil, fmt.Errorf("attempted to use insecure protocol! Use --insecure option to force")
-	}
-
-	return registry.New(ctx, auth, registry.Opt{
-		CAFile:     opts.cacert,
-		CertFile:   opts.cert,
-		KeyFile:    opts.key,
-		Debug:      opts.debug,
-		Digests:    opts.digests,
-		Domain:     domain,
-		Insecure:   opts.insecure,
-		NonSSL:     opts.insecure,
-		Passphrase: opts.keypass,
-	})
-}
-
-func getInfos(ctx context.Context, r *registry.Registry, repo string, ref string) (infos []*registry.Info, err error) {
-	// Filter by current arch & OS if neither --all, --arch or --os were specified
-	var arches, oses []string
-	if !opts.all && len(opts.arch) == 0 && len(opts.os) == 0 {
-		arches = []string{runtime.GOARCH}
-		oses = []string{runtime.GOOS}
-	} else {
-		arches = opts.arch
-		oses = opts.os
-	}
-
-	if opts.all || opts.verbose {
-		infos, err = r.GetInfoAll(ctx, repo, ref, arches, oses)
-		if err != nil {
-			return []*registry.Info{}, err
-		}
-		return infos, nil
-	}
-	info, err := r.GetInfo(ctx, repo, ref)
-	if err != nil {
-		return []*registry.Info{}, err
-	}
-	return []*registry.Info{info}, nil
-}
-
 func main() {
 	var domain, path string
 	var repoRegex, tagRegex *regexp.Regexp
@@ -254,10 +204,6 @@ func main() {
 			printImage(ctx, domain, path)
 		}
 	} else {
-		if opts.delete {
-			deleteAll(ctx, domain, repoRegex, tagRegex)
-		} else {
-			printAll(ctx, domain, repoRegex, tagRegex)
-		}
+		printAll(ctx, domain, repoRegex, tagRegex)
 	}
 }
