@@ -176,16 +176,17 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, arch
 	}
 
 	var wg sync.WaitGroup
+	var l sync.Mutex
 
-	infos := make([]*Info, len(m.Manifests))
-	for i, manifest := range m.Manifests {
+	var infos []*Info
+	for _, manifest := range m.Manifests {
 		if len(arches) > 0 && !slices.Contains(arches, manifest.Platform.Architecture) || len(oses) > 0 && !slices.Contains(oses, manifest.Platform.OS) {
 			continue
 		}
 		// Avoid address being captured in for loop
 		manifest := manifest
 		wg.Add(1)
-		go func(i int, manifest *oci.Descriptor) {
+		go func(manifest *oci.Descriptor) {
 			defer wg.Done()
 			info, err := r.GetInfo(ctx, repo, manifest.Digest.String())
 			if err != nil {
@@ -194,16 +195,12 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, arch
 			}
 			info.DigestAll = d.String()
 			info.Ref = ref
-			infos[i] = info
-		}(i, &manifest)
+			l.Lock()
+			infos = append(infos, info)
+			l.Unlock()
+		}(&manifest)
 	}
 	wg.Wait()
 
-	xinfos := make([]*Info, 0, len(infos))
-	for i := range infos {
-		if infos[i] != nil {
-			xinfos = append(xinfos, infos[i])
-		}
-	}
-	return xinfos, nil
+	return infos, nil
 }
