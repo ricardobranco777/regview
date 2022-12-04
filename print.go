@@ -31,8 +31,8 @@ var maxWorkers = 10
 func (w *loadWorker) Run(ctx context.Context) any {
 	tags, err := w.reg.Tags(ctx, w.repo)
 	if err != nil {
-		log.Printf("Get tags of [%s] error: %s\n", w.repo, err)
-		return nil
+		log.Printf("ERROR: %s: %v\n", w.repo, err)
+		return []*registry.Info{}
 	}
 	tags = filterRegex(tags, w.tagRegex)
 	sort.Strings(tags)
@@ -354,10 +354,7 @@ func printAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.Re
 	}()
 
 	for out := range output {
-		infos, ok := out.Value.([]*registry.Info)
-		if !ok {
-			continue
-		}
+		infos := out.Value.([]*registry.Info)
 		for _, info := range infos {
 			// We also have to filter by arch & os because the registry may not return a list
 			if len(opts.arch) > 0 && !slices.Contains(opts.arch, info.Image.Architecture) {
