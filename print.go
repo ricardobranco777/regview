@@ -37,7 +37,7 @@ func (w *loadWorker) Run(ctx context.Context) any {
 	tags = filterRegex(tags, w.tagRegex)
 	sort.Strings(tags)
 
-	var xinfos []*registry.Info
+	tag2Infos := make(map[string][]*registry.Info)
 	var m sync.Mutex
 	var wg sync.WaitGroup
 
@@ -54,19 +54,28 @@ func (w *loadWorker) Run(ctx context.Context) any {
 				return
 			}
 			m.Lock()
-			xinfos = append(xinfos, infos...)
+			tag2Infos[tag] = infos
 			m.Unlock()
 		}(tag)
 	}
 	wg.Wait()
+
+	var xinfos []*registry.Info
+	for _, tag := range tags {
+		if infos, ok := tag2Infos[tag]; ok {
+			xinfos = append(xinfos, infos...)
+		}
+	}
 
 	if !opts.all && !opts.verbose {
 		return xinfos
 	}
 
 	id2Blob := make(map[string]*oci.Image)
-	for _, info := range xinfos {
-		id2Blob[info.ID] = nil
+	for _, infos := range tag2Infos {
+		for _, info := range infos {
+			id2Blob[info.ID] = nil
+		}
 	}
 
 	wg.Add(len(id2Blob))
