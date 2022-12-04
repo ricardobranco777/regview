@@ -13,7 +13,7 @@ RUN set -x \
 	&& apk add --no-cache --virtual .build-deps \
 		make \
 	&& cd /go/src/github.com/ricardobranco777/regview \
-	&& make static \
+	&& make \
 	&& mv regview /usr/bin/regview \
 	&& apk del .build-deps \
 	&& rm -rf /go \
