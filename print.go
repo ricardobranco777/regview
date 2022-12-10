@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"regexp"
 	"runtime"
 	"sort"
 	"strings"
@@ -21,9 +20,8 @@ import (
 )
 
 type loadWorker struct {
-	reg      *registry.Registry
-	repo     string
-	tagRegex *regexp.Regexp
+	reg  *registry.Registry
+	repo string
 }
 
 var maxWorkers = 10
@@ -34,7 +32,7 @@ func (w *loadWorker) Run(ctx context.Context) any {
 		log.Printf("ERROR: %s: %v\n", w.repo, err)
 		return []*registry.Info{}
 	}
-	tags = filterRegex(tags, w.tagRegex)
+	tags = filterRegex(tags, tagRegex)
 	sort.Strings(tags)
 
 	tag2Infos := make(map[string][]*registry.Info)
@@ -333,7 +331,7 @@ func printImage(ctx context.Context, domain string, image string) {
 	}
 }
 
-func printAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.Regexp) {
+func printAll(ctx context.Context, domain string) {
 	r, err := createRegistryClient(ctx, domain)
 	if err != nil {
 		log.Fatal(err)
@@ -357,7 +355,7 @@ func printAll(ctx context.Context, domain string, repoRegex, tagRegex *regexp.Re
 
 	go func() {
 		for _, repo := range repos {
-			inputChan <- &loadWorker{reg: r, repo: repo, tagRegex: tagRegex}
+			inputChan <- &loadWorker{reg: r, repo: repo}
 		}
 		close(inputChan)
 	}()

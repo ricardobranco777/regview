@@ -50,6 +50,7 @@ var opts struct {
 }
 
 var repoWidth int
+var repoRegex, tagRegex *regexp.Regexp
 
 func init() {
 	log.SetFlags(0)
@@ -140,7 +141,6 @@ func init() {
 
 func main() {
 	var domain, path string
-	var repoRegex, tagRegex *regexp.Regexp
 	var repoPattern, tagPattern string
 
 	// Validate URL
@@ -204,6 +204,6 @@ func main() {
 			printImage(ctx, domain, path)
 		}
 	} else {
-		printAll(ctx, domain, repoRegex, tagRegex)
+		printAll(ctx, domain)
 	}
 }
