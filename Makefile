@@ -7,11 +7,8 @@ CGO_ENABLED := 0
 # Set the shell
 SHELL := /bin/bash
 
-# Set an output prefix, which is the local directory if not specified
-PREFIX?=$(shell pwd)
-
 # Set the build dir, where built cross-compiled binaries will be output
-BUILDDIR := ${PREFIX}/cross
+BUILDDIR := cross
 
 # Set our default go compiler
 GO := go

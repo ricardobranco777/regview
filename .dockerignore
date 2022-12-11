@@ -1,0 +1,5 @@
+*.exe
+regview
+cross/
+**/*easyjson*.go
+tests/certs/*

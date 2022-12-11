@@ -42,7 +42,7 @@ Icon
 .Spotlight-V100
 .Trashes
 
-reg
+regview
 cross/
 
 # Go coverage results
@@ -50,11 +50,6 @@ coverage.txt
 profile.out
 
 !go.mod
-
-testreg
-.certs
-server/static/index.html
-server/static/repo/
 
 **/*easyjson*.go
 tests/certs/*
