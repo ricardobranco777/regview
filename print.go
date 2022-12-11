@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -296,7 +297,7 @@ func printImage(ctx context.Context, domain string, image string) {
 		printIt(format, "DigestAll", info.DigestAll)
 		printIt(format, "Id", info.ID)
 		if opts.raw {
-			printIt("%-20s\t%d\n", "Size", info.Size)
+			printIt("%-20s\t%s\n", "Size", strconv.FormatInt(info.Size, 10))
 		} else {
 			printIt(format, "Size", prettySize(info.Size))
 		}
