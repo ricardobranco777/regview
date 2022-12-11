@@ -31,8 +31,6 @@ jobs:
 
     - name: Install dependencies
       run: |
-        go get github.com/mailru/easyjson
-        go install github.com/mailru/easyjson/...@latest
         make
 
     - name: Run tests
