@@ -190,7 +190,7 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, arch
 			defer wg.Done()
 			info, err := r.GetInfo(ctx, repo, manifest.Digest.String())
 			if err != nil {
-				log.Printf("ERROR: %s@%s: %v", repo, manifest.Digest.String(), err)
+				log.Printf("%s@%s: %v", repo, manifest.Digest.String(), err)
 				return
 			}
 			info.DigestAll = d.String()

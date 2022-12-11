@@ -29,7 +29,7 @@ var maxWorkers = 10
 func (w *loadWorker) Run(ctx context.Context) any {
 	tags, err := w.reg.Tags(ctx, w.repo)
 	if err != nil {
-		log.Printf("ERROR: %s: %v\n", w.repo, err)
+		log.Printf("%s: %v\n", w.repo, err)
 		return []*registry.Info{}
 	}
 	tags = filterRegex(tags, tagRegex)
