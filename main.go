@@ -135,11 +135,6 @@ func init() {
 		opts.digests = true
 	}
 
-	if flag.NArg() != 1 {
-		flag.Usage()
-		os.Exit(1)
-	}
-
 	var err error
 	if tz, err = time.LoadLocation("Local"); err != nil {
 		log.Fatal(err)
@@ -149,6 +144,11 @@ func init() {
 func main() {
 	var domain, path string
 	var repoPattern, tagPattern string
+
+	if flag.NArg() != 1 {
+		flag.Usage()
+		os.Exit(1)
+	}
 
 	// Validate URL
 	arg := flag.Args()[0]
