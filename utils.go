@@ -12,6 +12,8 @@ import (
 	"golang.org/x/term"
 )
 
+var tz *time.Location
+
 func filterRegex(ss []string, regex *regexp.Regexp) []string {
 	if regex == nil {
 		return ss
@@ -66,6 +68,5 @@ func prettySize(n int64) string {
 }
 
 func prettyTime(t *time.Time) string {
-	tz, _ := time.LoadLocation("Local")
 	return t.In(tz).Format(time.UnixDate)
 }

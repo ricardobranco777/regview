@@ -15,6 +15,7 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/ricardobranco777/regview/registry"
 	"golang.org/x/exp/slices"
@@ -137,6 +138,11 @@ func init() {
 	if flag.NArg() != 1 {
 		flag.Usage()
 		os.Exit(1)
+	}
+
+	var err error
+	if tz, err = time.LoadLocation("Local"); err != nil {
+		log.Fatal(err)
 	}
 }
 
