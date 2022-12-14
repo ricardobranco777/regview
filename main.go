@@ -142,13 +142,13 @@ func init() {
 }
 
 func main() {
-	var domain, path string
-	var repoPattern, tagPattern string
-
 	if flag.NArg() != 1 {
 		flag.Usage()
 		os.Exit(1)
 	}
+
+	var domain, path string
+	var repoPattern, tagPattern string
 
 	// Validate URL
 	arg := flag.Args()[0]

@@ -18,12 +18,14 @@ func filterRegex(ss []string, regex *regexp.Regexp) []string {
 	if regex == nil {
 		return ss
 	}
+
 	var matched []string
 	for _, s := range ss {
 		if regex.MatchString(s) {
 			matched = append(matched, s)
 		}
 	}
+
 	return matched
 }
 
@@ -44,22 +46,27 @@ func getCommit() string {
 	return commit + dirty
 }
 
-func getMax(ss []string) (max int) {
+func getMax(ss []string) int {
+	max := 0
+
 	for _, s := range ss {
 		if len(s) > max {
 			max = len(s)
 		}
 	}
-	return
+
+	return max
 }
 
 func getPass(prompt string, args ...interface{}) string {
 	fmt.Fprintf(os.Stderr, prompt, args...)
+
 	pass, err := term.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Fprintln(os.Stderr)
+
 	return string(pass)
 }
 

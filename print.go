@@ -37,8 +37,8 @@ func (w *loadWorker) Run(ctx context.Context) any {
 	sort.Strings(tags)
 
 	tag2Infos := make(map[string][]*registry.Info)
-	var m sync.Mutex
 	var wg sync.WaitGroup
+	var m sync.Mutex
 
 	wg.Add(len(tags))
 	for _, tag := range tags {
@@ -142,10 +142,12 @@ func getInfos(ctx context.Context, r *registry.Registry, repo string, ref string
 		}
 		return infos, nil
 	}
+
 	info, err := r.GetInfo(ctx, repo, ref)
 	if err != nil {
 		return []*registry.Info{}, err
 	}
+
 	return []*registry.Info{info}, nil
 }
 
@@ -160,12 +162,14 @@ func deleteImage(ctx context.Context, domain string, image string) {
 	if err != nil {
 		log.Fatalf("%s %s: %v\n", repo, ref, err)
 	}
+
 	for _, info := range infos {
 		fmt.Printf("Deleting %s@%s\n", repo, info.Digest)
 		if !opts.dryRun {
 			r.Delete(ctx, repo, info.Digest)
 		}
 	}
+
 	if opts.all {
 		// Also delete multi-arch digest
 		if infos[0].DigestAll != infos[0].Digest {
@@ -268,6 +272,7 @@ func printImage(ctx context.Context, domain string, image string) {
 	if err != nil {
 		log.Fatalf("%s: %v\n", image, err)
 	}
+
 	for _, info := range infos {
 		if opts.delete {
 			fmt.Printf("Deleting %s@%s\n", repo, info.Digest)
@@ -323,6 +328,7 @@ func printImage(ctx context.Context, domain string, image string) {
 		}
 		fmt.Println()
 	}
+
 	if opts.delete {
 		// OCI spec allows for deletions of tags
 		fmt.Printf("Deleting %s %s\n", repo, ref)
@@ -337,6 +343,7 @@ func printAll(ctx context.Context, domain string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	repos, err := r.Catalog(ctx, "")
 	if err != nil {
 		if _, ok := err.(*json.SyntaxError); ok {
