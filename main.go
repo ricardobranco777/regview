@@ -99,6 +99,11 @@ func init() {
 	if len(opts.arch) > 0 || len(opts.os) > 0 {
 		opts.all = true
 	}
+	// Filter by current arch & OS if neither --all, --arch or --os were specified
+	if !opts.all && len(opts.arch) == 0 && len(opts.os) == 0 {
+		opts.arch = []string{runtime.GOARCH}
+		opts.os = []string{runtime.GOOS}
+	}
 
 	if opts.version {
 		fmt.Printf("v%s %v %s/%s %s\n", version, runtime.Version(), runtime.GOOS, runtime.GOARCH, getCommit())

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -125,17 +124,7 @@ func createRegistryClient(ctx context.Context, domain string) (*registry.Registr
 }
 
 func getInfos(ctx context.Context, r *registry.Registry, repo string, ref string) (infos []*registry.Info, err error) {
-	// Filter by current arch & OS if neither --all, --arch or --os were specified
-	var arches, oses []string
-	if !opts.all && len(opts.arch) == 0 && len(opts.os) == 0 {
-		arches = []string{runtime.GOARCH}
-		oses = []string{runtime.GOOS}
-	} else {
-		arches = opts.arch
-		oses = opts.os
-	}
-
-	infos, err = r.GetInfoAll(ctx, repo, ref, arches, oses)
+	infos, err = r.GetInfoAll(ctx, repo, ref, opts.arch, opts.os)
 	if err != nil {
 		return []*registry.Info{}, err
 	}
@@ -277,14 +266,14 @@ func printImage(ctx context.Context, domain string, image string) {
 		if opts.verbose {
 			info.Image, _ = r.GetImage(ctx, repo, info.ID)
 		}
-		// We also have to filter by arch & os because the registry may not return a list
-		if len(opts.arch) > 0 && !slices.Contains(opts.arch, info.Image.Architecture) {
-			continue
-		}
-		if len(opts.os) > 0 && !slices.Contains(opts.os, info.Image.OS) {
-			continue
-		}
 		if info.Image != nil {
+			// We also have to filter by arch & os because the registry may not return a list
+			if len(opts.arch) > 0 && !slices.Contains(opts.arch, info.Image.Architecture) {
+				continue
+			}
+			if len(opts.os) > 0 && !slices.Contains(opts.os, info.Image.OS) {
+				continue
+			}
 			printIt(format, "Author", info.Image.Author)
 			printIt(format, "Architecture", info.Image.Architecture)
 			printIt(format, "OS", info.Image.OS)
@@ -362,12 +351,14 @@ func printAll(ctx context.Context, domain string) {
 	for out := range output {
 		infos := out.Value.([]*registry.Info)
 		for _, info := range infos {
-			// We also have to filter by arch & os because the registry may not return a list
-			if len(opts.arch) > 0 && !slices.Contains(opts.arch, info.Image.Architecture) {
-				continue
-			}
-			if len(opts.os) > 0 && !slices.Contains(opts.os, info.Image.OS) {
-				continue
+			if info.Image != nil {
+				// We also have to filter by arch & os because the registry may not return a list
+				if len(opts.arch) > 0 && !slices.Contains(opts.arch, info.Image.Architecture) {
+					continue
+				}
+				if len(opts.os) > 0 && !slices.Contains(opts.os, info.Image.OS) {
+					continue
+				}
 			}
 			printInfo(info)
 		}
