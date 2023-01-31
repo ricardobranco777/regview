@@ -135,20 +135,11 @@ func getInfos(ctx context.Context, r *registry.Registry, repo string, ref string
 		oses = opts.os
 	}
 
-	if opts.all || opts.verbose {
-		infos, err = r.GetInfoAll(ctx, repo, ref, arches, oses)
-		if err != nil {
-			return []*registry.Info{}, err
-		}
-		return infos, nil
-	}
-
-	info, err := r.GetInfo(ctx, repo, ref)
+	infos, err = r.GetInfoAll(ctx, repo, ref, arches, oses)
 	if err != nil {
 		return []*registry.Info{}, err
 	}
-
-	return []*registry.Info{info}, nil
+	return infos, nil
 }
 
 func deleteImage(ctx context.Context, domain string, image string) {
