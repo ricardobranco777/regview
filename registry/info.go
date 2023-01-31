@@ -181,7 +181,8 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, arch
 
 	var infos []*Info
 	for _, manifest := range m.Manifests {
-		if len(arches) > 0 && !slices.Contains(arches, manifest.Platform.Architecture) || len(oses) > 0 && !slices.Contains(oses, manifest.Platform.OS) {
+		if len(arches) > 0 && !slices.Contains(arches, manifest.Platform.Architecture) || manifest.Platform.Architecture == "unknown" ||
+			len(oses) > 0 && !slices.Contains(oses, manifest.Platform.OS) || manifest.Platform.OS == "unknown" {
 			continue
 		}
 		// Avoid address being captured in for loop
