@@ -12,7 +12,7 @@ import (
 // Catalog returns the repositories in a registry.
 func (r *Registry) Catalog(ctx context.Context, u string) ([]string, error) {
 	if u == "" {
-		u = "/v2/_catalog"
+		u = "/v2/_catalog?n=1000" // By default, Docker Distribution returns 100 entries
 	}
 	uri := r.url(u)
 
