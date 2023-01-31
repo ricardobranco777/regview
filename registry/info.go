@@ -153,11 +153,12 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, arch
 	}
 
 	var m oci.Index
-	if resp.Header.Get("Content-Type") == manifestlist.MediaTypeManifestList {
+	switch resp.Header.Get("Content-Type") {
+	case manifestlist.MediaTypeManifestList, oci.MediaTypeImageIndex:
 		if err := m.UnmarshalJSON(data); err != nil {
 			return nil, err
 		}
-	} else if resp.Header.Get("Content-Type") == schema2.MediaTypeManifest {
+	case schema2.MediaTypeManifest, oci.MediaTypeImageManifest:
 		var m oci.Manifest
 		if err := m.UnmarshalJSON(data); err != nil {
 			return nil, err
