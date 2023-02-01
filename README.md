@@ -4,10 +4,6 @@
 
 View the contents of a Docker Registry v2
 
-Based on [reg](https://github.com/genuinetools/reg).
-
-Old Python version: https://github.com/ricardobranco777/py-regview
-
 ## Usage
 
 ```
@@ -49,7 +45,6 @@ Valid options for --os: aix android darwin dragonfly freebsd illumos ios js linu
 - [Amazon ECR](https://aws.amazon.com/blogs/compute/authenticating-amazon-ecr-repositories-for-docker-cli-with-credential-helper/) (get credentials with `aws ecr get-login` and run `docker login`)
 - [Azure ACR](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-faq) (get credentials with `az acr credential show -n $` and run `docker login`)
 - [Google GCR](https://cloud.google.com/container-registry/docs/advanced-authentication) (run `gcloud auth configure-docker` and use `[ZONE.]gcr.io/<PROJECT>/*` to list the registry)
-- ~~Docker Hub~~ Dropped due to stupid [rate limit](https://docs.docker.com/docker-hub/download-rate-limit/).
 
 ## Deleting images
 
@@ -67,14 +62,3 @@ NOTES:
 - The `--delete-untagged` option was added to Docker Registry 2.7.0
 - The `--delete-untagged` option is [BUGGY](https://github.com/distribution/distribution/issues/3178) with multi-arch images. The only workaround is to  push those images adding the os/arch name to the image name.
 - USE AT YOUR OWN RISK!
-
-## Podman
-
-To use with [Podman](https://podman.io/):
-
-`alias podman=docker`
-
-## TODO
-
-- Add tests.
-- Support proxies?
