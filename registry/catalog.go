@@ -21,7 +21,6 @@ func (r *Registry) Catalog(ctx context.Context, u string) ([]string, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	dump(resp)
 
 	data, _ := io.ReadAll(resp.Body)
 	if err := apiError(data, err); err != nil {
