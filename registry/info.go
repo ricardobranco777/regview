@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"sync"
 
 	"github.com/distribution/distribution/manifest/manifestlist"
 	"github.com/distribution/distribution/manifest/schema2"
@@ -176,33 +175,21 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, arch
 		d = r.getDigest(ctx, repo, ref, data)
 	}
 
-	var wg sync.WaitGroup
-	var l sync.Mutex
-
 	var infos []*Info
 	for _, manifest := range m.Manifests {
 		if len(arches) > 0 && !slices.Contains(arches, manifest.Platform.Architecture) || manifest.Platform.Architecture == "unknown" ||
 			len(oses) > 0 && !slices.Contains(oses, manifest.Platform.OS) || manifest.Platform.OS == "unknown" {
 			continue
 		}
-		// Avoid address being captured in for loop
-		manifest := manifest
-		wg.Add(1)
-		go func(manifest *oci.Descriptor) {
-			defer wg.Done()
-			info, err := r.GetInfo(ctx, repo, manifest.Digest.String())
-			if err != nil {
-				log.Printf("%s@%s: %v", repo, manifest.Digest.String(), err)
-				return
-			}
-			info.DigestAll = d.String()
-			info.Ref = ref
-			l.Lock()
-			infos = append(infos, info)
-			l.Unlock()
-		}(&manifest)
+		info, err := r.GetInfo(ctx, repo, manifest.Digest.String())
+		if err != nil {
+			log.Printf("%s@%s: %v", repo, manifest.Digest.String(), err)
+			continue
+		}
+		info.DigestAll = d.String()
+		info.Ref = ref
+		infos = append(infos, info)
 	}
-	wg.Wait()
 
 	return infos, nil
 }

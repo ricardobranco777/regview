@@ -10,7 +10,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/ricardobranco777/regview/oci"
 	"github.com/ricardobranco777/regview/registry"
@@ -38,27 +37,18 @@ func (w *loadWorker) Run(ctx context.Context) any {
 	sort.Strings(tags)
 
 	tag2Infos := make(map[string][]*registry.Info)
-	var wg sync.WaitGroup
-	var m sync.Mutex
 
-	wg.Add(len(tags))
 	for _, tag := range tags {
-		go func(tag string) {
-			defer wg.Done()
-			infos, err := getInfos(ctx, w.reg, w.repo, tag)
-			if err != nil {
-				// Ignore this error that can happen when manifests may be available but not for this platform
-				if err.Error() != "MANIFEST_UNKNOWN" {
-					log.Printf("%s:%s: %v\n", w.repo, tag, err)
-				}
-				return
+		infos, err := getInfos(ctx, w.reg, w.repo, tag)
+		if err != nil {
+			// Ignore this error that can happen when manifests may be available but not for this platform
+			if err.Error() != "MANIFEST_UNKNOWN" {
+				log.Printf("%s:%s: %v\n", w.repo, tag, err)
 			}
-			m.Lock()
-			tag2Infos[tag] = infos
-			m.Unlock()
-		}(tag)
+			continue
+		}
+		tag2Infos[tag] = infos
 	}
-	wg.Wait()
 
 	var xinfos []*registry.Info
 	for _, tag := range tags {
@@ -78,21 +68,14 @@ func (w *loadWorker) Run(ctx context.Context) any {
 		}
 	}
 
-	wg.Add(len(id2Blob))
 	for id := range id2Blob {
-		go func(id string) {
-			defer wg.Done()
-			blob, err := w.reg.GetImage(ctx, w.repo, id)
-			if err != nil {
-				log.Printf("%s@%s: %v\n", w.repo, id, err)
-				return
-			}
-			m.Lock()
+		blob, err := w.reg.GetImage(ctx, w.repo, id)
+		if err != nil {
+			log.Printf("%s@%s: %v\n", w.repo, id, err)
+		} else {
 			id2Blob[id] = blob
-			m.Unlock()
-		}(id)
+		}
 	}
-	wg.Wait()
 
 	for _, info := range xinfos {
 		info.Image = id2Blob[info.ID]
