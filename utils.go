@@ -14,7 +14,7 @@ import (
 
 var tz *time.Location
 
-func filterRegex(ss []string, regex *regexp.Regexp) []string {
+func filterRegex(ss []string, regex *regexp.Regexp, exclude bool) []string {
 	if regex == nil {
 		return ss
 	}
@@ -22,6 +22,10 @@ func filterRegex(ss []string, regex *regexp.Regexp) []string {
 	var matched []string
 	for _, s := range ss {
 		if regex.MatchString(s) {
+			if !exclude {
+				matched = append(matched, s)
+			}
+		} else if exclude {
 			matched = append(matched, s)
 		}
 	}

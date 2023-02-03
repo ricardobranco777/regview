@@ -53,9 +53,10 @@ var opts struct {
 }
 
 var (
-	repoWidth           int
-	repoRegex, tagRegex *regexp.Regexp
 	format              = template.New("format")
+	ignoreTags          = regexp.MustCompile(`^sha(256|512)-[0-9a-f]{64,}\.(att|sig)$`) // Ignore stupid sigstore/cosign fake manifests & signatures
+	repoRegex, tagRegex *regexp.Regexp
+	repoWidth           int
 )
 
 func init() {

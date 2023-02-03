@@ -25,7 +25,7 @@ func Test_filterRegex(t *testing.T) {
 		}
 		regex := regexp.MustCompile("^" + expr + "$")
 
-		got := filterRegex(ss, regex)
+		got := filterRegex(ss, regex, false)
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("filterRegex(%s, %s) got %v; want %v", ss, regex, got, want)
 		}

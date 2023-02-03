@@ -33,7 +33,8 @@ func (w *loadWorker) Run(ctx context.Context) any {
 		log.Printf("%s: %v\n", w.repo, err)
 		return []*registry.Info{}
 	}
-	tags = filterRegex(tags, tagRegex)
+	tags = filterRegex(tags, tagRegex, false)
+	tags = filterRegex(tags, ignoreTags, true)
 	sort.Strings(tags)
 
 	tag2Infos := make(map[string][]*registry.Info)
@@ -340,7 +341,7 @@ func printAll(ctx context.Context, domain string) {
 			log.Fatal(err)
 		}
 	}
-	repos = filterRegex(repos, repoRegex)
+	repos = filterRegex(repos, repoRegex, false)
 	sort.Strings(repos)
 
 	repoWidth = getMax(repos)
