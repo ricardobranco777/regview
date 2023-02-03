@@ -15,6 +15,7 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"text/template"
 	"time"
 
 	"github.com/ricardobranco777/regview/registry"
@@ -46,12 +47,16 @@ var opts struct {
 	username string
 	password string
 	keypass  string
+	format   string
 	arch     []string
 	os       []string
 }
 
-var repoWidth int
-var repoRegex, tagRegex *regexp.Regexp
+var (
+	repoWidth           int
+	repoRegex, tagRegex *regexp.Regexp
+	format              = template.New("format")
+)
 
 func init() {
 	log.SetFlags(0)
@@ -82,6 +87,7 @@ func init() {
 	flag.StringVarP(&opts.cert, "tlscert", "c", "", "Path to TLS certificate file")
 	flag.StringVarP(&opts.key, "tlskey", "k", "", "Path to TLS key file")
 	flag.StringVarP(&opts.keypass, "tlskeypass", "P", "", "Passphrase for TLS key file")
+	flag.StringVarP(&opts.format, "format", "f", "", "Output format")
 	flag.StringSliceVarP(&opts.arch, "arch", "", []string{}, "Target architecture. May be specified multiple times")
 	flag.StringSliceVarP(&opts.os, "os", "", []string{}, "Target OS. May be specified multiple times")
 	flag.Parse()
@@ -141,6 +147,17 @@ func init() {
 	}
 
 	var err error
+
+	if opts.format != "" {
+		format, err = format.Parse(opts.format)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if strings.Contains(opts.format, ".Image") {
+			opts.verbose = true
+		}
+	}
+
 	if tz, err = time.LoadLocation("Local"); err != nil {
 		log.Fatal(err)
 	}

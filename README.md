@@ -14,6 +14,7 @@ regview [OPTIONS] REGISTRY[/REPOSITORY[:TAG|@DIGEST]]
       --delete              Delete images. USE WITH CAUTION
       --digests             Show digests
       --dry-run             Used with --delete: only show the images that would be deleted
+  -f, --format string       Output format
       --insecure            Allow insecure server connections
       --no-trunc            Don't truncate output
       --os strings          Target OS. May be specified multiple times

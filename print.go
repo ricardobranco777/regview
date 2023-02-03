@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"reflect"
 	"sort"
 	"strconv"
@@ -186,6 +187,12 @@ func printHeader() {
 }
 
 func printInfo(info *registry.Info) {
+	if opts.format != "" {
+		format.Execute(os.Stdout, info)
+		fmt.Println()
+		return
+	}
+
 	fmt.Printf("%-*s", repoWidth+20, info.Repo+":"+info.Ref)
 	if opts.digests {
 		fmt.Printf("  %-72s", info.Digest)
@@ -262,10 +269,11 @@ func printImage(ctx context.Context, domain string, image string) {
 			continue
 		}
 
-		format := "%-20s\t%s\n"
 		if opts.verbose {
 			info.Image, _ = r.GetImage(ctx, repo, info.ID)
 		}
+
+		format := "%-20s\t%s\n"
 		if info.Image != nil {
 			// We also have to filter by arch & os because the registry may not return a list
 			if len(opts.arch) > 0 && !slices.Contains(opts.arch, info.Image.Architecture) {
@@ -336,7 +344,9 @@ func printAll(ctx context.Context, domain string) {
 	sort.Strings(repos)
 
 	repoWidth = getMax(repos)
-	printHeader()
+	if opts.format == "" {
+		printHeader()
+	}
 
 	inputChan := make(chan concurrently.WorkFunction)
 	output := concurrently.Process(ctx, inputChan, &concurrently.Options{PoolSize: maxWorkers, OutChannelBuffer: maxWorkers})
