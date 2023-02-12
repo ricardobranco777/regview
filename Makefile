@@ -24,7 +24,7 @@ build: prebuild $(NAME) ## Builds a dynamic executable or package.
 
 $(NAME): $(wildcard *.go) $(wildcard */*.go)
 	@echo "+ $@"
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) build -o $(NAME) .
+	CGO_ENABLED=$(CGO_ENABLED) GOFLAGS=$(GOFLAGS) $(GO) build -o $(NAME) .
 
 all: clean build fmt test staticcheck vet install ## Runs a clean, build, fmt, test, staticcheck, vet and install.
 
