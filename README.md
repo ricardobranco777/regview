@@ -63,3 +63,7 @@ NOTES:
 - The `--delete-untagged` option was added to Docker Registry 2.7.0
 - The `--delete-untagged` option is [BUGGY](https://github.com/distribution/distribution/issues/3178) with multi-arch images. The only workaround is to  push those images adding the os/arch name to the image name.
 - USE AT YOUR OWN RISK!
+
+## BUGS / LIMITATIONS
+
+- Listing a pull through cache Registry may pollute the cache with unwanted images as the cache proxies requests, ending up with `TOOMANYREQUESTS error: "You have reached your pull rate limit. You may increase the limit by authenticating and upgrading: https://www.docker.com/increase-rate-limit".`
