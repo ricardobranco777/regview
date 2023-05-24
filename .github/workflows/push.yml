@@ -1,0 +1,22 @@
+name: GitHub Container Registry
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  dockerloginbuildpush:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v2
+      - name: Create image
+        run: docker build -t ghcr.io/${{ github.actor }}/regview .
+      - name: Push
+        run: docker push ghcr.io/${{ github.actor }}/regview:latest
