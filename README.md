@@ -4,6 +4,8 @@
 
 View the contents of a Docker Registry v2
 
+Docker image available at `ghcr.io/ricardobranco777/regview:latest`
+
 ## Usage
 
 ```
