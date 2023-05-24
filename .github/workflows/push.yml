@@ -13,10 +13,10 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: zertz
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v2
       - name: Create image
-        run: docker build -t ghcr.io/zertz/regview .
+        run: docker build -t ghcr.io/${{ github.actor }}/regview .
       - name: Push
-        run: docker push ghcr.io/zertz/regview:latest
+        run: docker push ghcr.io/${{ github.actor }}/regview:latest
