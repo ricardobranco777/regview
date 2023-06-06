@@ -69,3 +69,4 @@ NOTES:
 ## BUGS / LIMITATIONS
 
 - Listing a pull through cache Registry may pollute the cache with unwanted images as the cache proxies requests, ending up with `TOOMANYREQUESTS error: "You have reached your pull rate limit. You may increase the limit by authenticating and upgrading: https://www.docker.com/increase-rate-limit".`
+- When developing this tool I was warned that I was DDOS'ing the production registry, so be careful when tweaking the code that uses goroutines.
