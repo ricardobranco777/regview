@@ -26,6 +26,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/ricardobranco777/simplepki v0.0.0-20230813185947-fc0c2cd228bc // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	gotest.tools/v3 v3.5.0 // indirect

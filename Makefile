@@ -26,6 +26,7 @@ $(NAME): $(wildcard *.go) $(wildcard */*.go)
 	@echo "+ $@"
 	CGO_ENABLED=$(CGO_ENABLED) GOFLAGS=$(GOFLAGS) $(GO) build -o $(NAME) .
 
+.PHONY: all
 all: clean build fmt test staticcheck vet install ## Runs a clean, build, fmt, test, staticcheck, vet and install.
 
 .PHONY: fmt
