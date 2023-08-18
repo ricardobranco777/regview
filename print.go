@@ -284,11 +284,17 @@ func printImage(ctx context.Context, domain string, image string) {
 				continue
 			}
 			printIt(format, "Author", info.Image.Author)
-			printIt(format, "Architecture", info.Image.Architecture)
-			printIt(format, "OS", info.Image.OS)
-		} else {
-			printIt(format, "Architecture", info.Architecture)
-			printIt(format, "OS", info.OS)
+			if info.Platform == nil {
+				printIt(format, "Architecture", info.Image.Architecture)
+				printIt(format, "OS", info.Image.OS)
+			}
+		}
+		if info.Platform != nil {
+			printIt(format, "Architecture", info.Platform.Architecture)
+			printIt(format, "Variant", info.Platform.Variant)
+			printIt(format, "OS", info.Platform.OS)
+			printIt(format, "OSVersion", info.Platform.OSVersion)
+			printIt(format, "OSFeatures", info.Platform.OSFeatures)
 		}
 		printIt(format, "Digest", info.Digest)
 		printIt(format, "DigestAll", info.DigestAll)
