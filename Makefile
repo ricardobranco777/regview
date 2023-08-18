@@ -26,6 +26,13 @@ $(NAME): $(wildcard *.go) $(wildcard */*.go)
 	@echo "+ $@"
 	CGO_ENABLED=$(CGO_ENABLED) GOFLAGS=$(GOFLAGS) $(GO) build -o $(NAME) .
 
+.PHONY: gen
+gen:
+	@rm -f go.mod go.sum
+	@go mod init $(BIN)
+	@go mod tidy
+	@go get github.com/ricardobranco777/simplepki
+
 .PHONY: all
 all: clean build fmt test staticcheck vet install ## Runs a clean, build, fmt, test, staticcheck, vet and install.
 
@@ -50,7 +57,7 @@ vet: prebuild ## Verifies `go vet` passes.
 
 .PHONY: staticcheck
 staticcheck: prebuild ## Verifies `staticcheck` passes.
-	@go install honnef.co/go/tools/cmd/staticcheck@2023.1.3
+	@go install honnef.co/go/tools/cmd/staticcheck@2023.1.5
 	@echo "+ $@"
 	@if [[ ! -z "$(shell staticcheck $(shell $(GO) list ./...) | tee /dev/stderr)" ]]; then \
 		exit 1; \

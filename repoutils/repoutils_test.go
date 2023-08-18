@@ -9,7 +9,7 @@ import (
 
 	"github.com/distribution/distribution/reference"
 	"github.com/docker/cli/cli/config"
-	"github.com/docker/docker/api/types"
+	types "github.com/docker/docker/api/types/registry"
 	"github.com/google/go-cmp/cmp"
 )
 

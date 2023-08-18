@@ -8,7 +8,7 @@ import (
 	"github.com/distribution/distribution/reference"
 	"github.com/docker/cli/cli/config"
 	clitypes "github.com/docker/cli/cli/config/types"
-	"github.com/docker/docker/api/types"
+	types "github.com/docker/docker/api/types/registry"
 )
 
 const latestTagSuffix = ":latest"

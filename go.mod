@@ -1,11 +1,11 @@
 module github.com/ricardobranco777/regview
 
-go 1.19
+go 1.21.0
 
 require (
-	github.com/distribution/distribution v2.8.1+incompatible
-	github.com/docker/cli v20.10.21+incompatible
-	github.com/docker/docker v20.10.21+incompatible
+	github.com/distribution/distribution v2.8.2+incompatible
+	github.com/docker/cli v24.0.5+incompatible
+	github.com/docker/docker v24.0.5+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/docker/go-units v0.5.0
 	github.com/google/go-cmp v0.5.9
@@ -14,20 +14,19 @@ require (
 	github.com/peterhellberg/link v1.2.0
 	github.com/spf13/pflag v1.0.5
 	github.com/tejzpr/ordered-concurrently/v3 v3.0.1
-	golang.org/x/exp v0.0.0-20221111204811-129d8d6c17ab
-	golang.org/x/term v0.2.0
-	mvdan.cc/sh/v3 v3.5.1
+	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
+	golang.org/x/term v0.11.0
+	mvdan.cc/sh/v3 v3.7.0
 )
 
 require (
-	github.com/docker/distribution v2.8.1+incompatible // indirect
-	github.com/docker/docker-credential-helpers v0.7.0 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/docker/distribution v2.8.2+incompatible // indirect
+	github.com/docker/docker-credential-helpers v0.8.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/ricardobranco777/simplepki v0.0.0-20230813185947-fc0c2cd228bc // indirect
-	github.com/sirupsen/logrus v1.9.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
+	golang.org/x/sys v0.11.0 // indirect
 	gotest.tools/v3 v3.5.0 // indirect
 )
