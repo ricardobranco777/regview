@@ -19,13 +19,15 @@ import (
 
 // Info type for interesting information
 type Info struct {
-	Image     *oci.Image
-	Digest    string
-	DigestAll string
-	ID        string
-	Repo      string
-	Ref       string
-	Size      int64
+	Image        *oci.Image
+	Architecture string
+	Digest       string
+	DigestAll    string
+	ID           string
+	OS           string
+	Repo         string
+	Ref          string
+	Size         int64
 }
 
 // GetImage gets the image config
@@ -195,6 +197,8 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, arch
 				log.Printf("%s@%s: %v", repo, manifest.Digest.String(), err)
 				return
 			}
+			info.Architecture = manifest.Platform.Architecture
+			info.OS = manifest.Platform.OS
 			info.DigestAll = d.String()
 			info.Ref = ref
 			l.Lock()

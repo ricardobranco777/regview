@@ -286,6 +286,9 @@ func printImage(ctx context.Context, domain string, image string) {
 			printIt(format, "Author", info.Image.Author)
 			printIt(format, "Architecture", info.Image.Architecture)
 			printIt(format, "OS", info.Image.OS)
+		} else {
+			printIt(format, "Architecture", info.Architecture)
+			printIt(format, "OS", info.OS)
 		}
 		printIt(format, "Digest", info.Digest)
 		printIt(format, "DigestAll", info.DigestAll)
