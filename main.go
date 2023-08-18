@@ -25,7 +25,7 @@ import (
 
 import flag "github.com/spf13/pflag"
 
-const version = "3.0.1"
+const version = "3.0.2"
 
 // ContextKey type for contexts
 type ContextKey string
