@@ -6,13 +6,13 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"slices"
 	"strings"
 	"sync"
 
 	"github.com/distribution/distribution/manifest/manifestlist"
 	"github.com/distribution/distribution/manifest/schema2"
 	"github.com/ricardobranco777/regview/oci"
-	"golang.org/x/exp/slices"
 
 	digest "github.com/opencontainers/go-digest"
 )

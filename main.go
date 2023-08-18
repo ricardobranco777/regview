@@ -13,13 +13,13 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"slices"
 	"strings"
 	"syscall"
 	"text/template"
 	"time"
 
 	"github.com/ricardobranco777/regview/registry"
-	"golang.org/x/exp/slices"
 	"mvdan.cc/sh/v3/pattern"
 )
 

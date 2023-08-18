@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -15,7 +16,6 @@ import (
 	"github.com/ricardobranco777/regview/oci"
 	"github.com/ricardobranco777/regview/registry"
 	"github.com/ricardobranco777/regview/repoutils"
-	"golang.org/x/exp/slices"
 
 	concurrently "github.com/tejzpr/ordered-concurrently/v3"
 )

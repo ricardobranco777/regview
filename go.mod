@@ -1,6 +1,6 @@
 module github.com/ricardobranco777/regview
 
-go 1.21.0
+go 1.21
 
 require (
 	github.com/distribution/distribution v2.8.2+incompatible
@@ -14,7 +14,6 @@ require (
 	github.com/peterhellberg/link v1.2.0
 	github.com/spf13/pflag v1.0.5
 	github.com/tejzpr/ordered-concurrently/v3 v3.0.1
-	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 	golang.org/x/term v0.11.0
 	mvdan.cc/sh/v3 v3.7.0
 )
