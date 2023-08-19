@@ -10,10 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"regexp"
 )
-
-var gcrMatcher = regexp.MustCompile(`https://([a-z]+\.|)gcr\.io/`)
 
 // TokenTransport defines the data structure for authentication via tokens.
 type TokenTransport struct {
@@ -168,10 +165,7 @@ func (r *Registry) Token(ctx context.Context, url string) (string, error) {
 	defer resp.Body.Close()
 	dump(resp)
 
-	if resp.StatusCode == http.StatusForbidden && gcrMatcher.MatchString(url) {
-		// GCR is not sending HTTP 401 on missing credentials but a HTTP 403 without
-		// any further information about why the request failed. Sending the credentials
-		// from the Docker config fixes this.
+	if resp.StatusCode == http.StatusForbidden {
 		return "", ErrBasicAuth
 	}
 
