@@ -3,7 +3,7 @@ package registry
 import (
 	"fmt"
 
-	"github.com/distribution/distribution/reference"
+	"github.com/distribution/reference"
 	digest "github.com/opencontainers/go-digest"
 )
 

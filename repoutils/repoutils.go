@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/distribution/distribution/reference"
+	"github.com/distribution/reference"
 	"github.com/docker/cli/cli/config"
 	clitypes "github.com/docker/cli/cli/config/types"
 	types "github.com/docker/docker/api/types/registry"
