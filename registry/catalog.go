@@ -14,7 +14,7 @@ func (r *Registry) Catalog(ctx context.Context, u string) ([]string, error) {
 	if u == "" {
 		u = "/v2/_catalog"
 	}
-	uri := r.url(u)
+	uri := r.url("%s", u)
 
 	resp, err := r.httpGet(ctx, uri, nil)
 	if resp == nil {

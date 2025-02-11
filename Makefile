@@ -28,10 +28,10 @@ $(NAME): $(wildcard *.go) $(wildcard */*.go)
 
 .PHONY: gen
 gen:
-	@rm -f go.mod go.sum
-	@go mod init $(BIN)
-	@go mod tidy
-	@go get github.com/ricardobranco777/simplepki
+	$(RM) go.mod go.sum
+	$(GO) mod init $(BIN)
+	$(GO) mod tidy
+	$(GO) get github.com/ricardobranco777/simplepki
 
 .PHONY: all
 all: clean build fmt test staticcheck vet install ## Runs a clean, build, fmt, test, staticcheck, vet and install.
@@ -57,7 +57,7 @@ vet: prebuild ## Verifies `go vet` passes.
 
 .PHONY: staticcheck
 staticcheck: prebuild ## Verifies `staticcheck` passes.
-	@go install honnef.co/go/tools/cmd/staticcheck@2023.1.6
+	@$(GO) install honnef.co/go/tools/cmd/staticcheck@2025.1
 	@echo "+ $@"
 	@if [[ ! -z "$(shell staticcheck $(shell $(GO) list ./...) | tee /dev/stderr)" ]]; then \
 		exit 1; \
@@ -114,5 +114,5 @@ clean: ## Cleanup any build binaries or packages.
 prebuild: $(EASYJSON)
 
 $(EASYJSON):
-	@go install github.com/mailru/easyjson/...@latest
-	@go generate -x ./...
+	$(GO) install github.com/mailru/easyjson/...@latest
+	$(GO) generate -x ./...

@@ -14,7 +14,7 @@ func (r *Registry) tags(ctx context.Context, u string, repository string) ([]str
 	if u == "" {
 		uri = r.url("/v2/%s/tags/list", repository)
 	} else {
-		uri = r.url(u)
+		uri = r.url("%s", u)
 	}
 
 	resp, err := r.httpGet(ctx, uri, nil)
