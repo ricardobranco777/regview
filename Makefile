@@ -2,7 +2,13 @@
 NAME := regview
 PKG := github.com/ricardobranco777/$(NAME)
 
-CGO_ENABLED := 0
+# https://github.com/golang/go/issues/64875
+arch := $(shell uname -m)
+ifeq ($(arch),s390x)
+CGO_ENABLED ?= 0
+else
+CGO_ENABLED := 1
+endif
 
 # Set the shell
 SHELL := /bin/bash
