@@ -63,7 +63,7 @@ vet: prebuild ## Verifies `go vet` passes.
 
 .PHONY: staticcheck
 staticcheck: prebuild ## Verifies `staticcheck` passes.
-	@$(GO) install honnef.co/go/tools/cmd/staticcheck@2025.1
+	@$(GO) install honnef.co/go/tools/cmd/staticcheck@2025.1.1
 	@echo "+ $@"
 	@if [[ ! -z "$(shell staticcheck $(shell $(GO) list ./...) | tee /dev/stderr)" ]]; then \
 		exit 1; \
