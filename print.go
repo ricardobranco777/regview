@@ -215,7 +215,7 @@ func printInfo(info *registry.Info) {
 			fmt.Printf("  %-31s", "-")
 		}
 	}
-	if opts.all {
+	if opts.all && info.Image != nil {
 		fmt.Printf("  %-8s  %s", info.Image.OS, info.Image.Architecture)
 	}
 	fmt.Println()
