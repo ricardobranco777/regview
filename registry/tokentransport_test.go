@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	types "github.com/docker/docker/api/types/registry"
+	types "github.com/moby/moby/api/types/registry"
 )
 
 func TestErrBasicAuth(t *testing.T) {

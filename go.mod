@@ -5,12 +5,12 @@ go 1.23.0
 require (
 	github.com/distribution/distribution v2.8.3+incompatible
 	github.com/distribution/reference v0.6.0
-	github.com/docker/cli v28.3.2+incompatible
-	github.com/docker/docker v28.3.2+incompatible
+	github.com/docker/cli v28.3.3+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/docker/go-units v0.5.0
 	github.com/google/go-cmp v0.7.0
 	github.com/mailru/easyjson v0.9.0
+	github.com/moby/moby/api v0.0.0-20250731053223-39030fdf942e
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/peterhellberg/link v1.2.0
 	github.com/spf13/pflag v1.0.7
@@ -28,5 +28,4 @@ require (
 	github.com/ricardobranco777/simplepki v0.0.0-20250430204633-b010368698d1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	golang.org/x/sys v0.34.0 // indirect
-	gotest.tools/v3 v3.5.2 // indirect
 )

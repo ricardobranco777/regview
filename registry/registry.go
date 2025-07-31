@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	types "github.com/docker/docker/api/types/registry"
+	types "github.com/moby/moby/api/types/registry"
 	"github.com/docker/go-connections/tlsconfig"
 )
 
