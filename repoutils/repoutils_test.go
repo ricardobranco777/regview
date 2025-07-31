@@ -9,8 +9,8 @@ import (
 
 	"github.com/distribution/reference"
 	"github.com/docker/cli/cli/config"
-	types "github.com/moby/moby/api/types/registry"
 	"github.com/google/go-cmp/cmp"
+	types "github.com/moby/moby/api/types/registry"
 )
 
 func TestGetAuthConfig(t *testing.T) {

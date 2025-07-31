@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	types "github.com/moby/moby/api/types/registry"
 	"github.com/docker/go-connections/tlsconfig"
+	types "github.com/moby/moby/api/types/registry"
 )
 
 // Registry defines the client for retrieving information from the registry API.
