@@ -53,7 +53,6 @@ func New(ctx context.Context, auth types.AuthConfig, opt Opt) (*Registry, error)
 			CAFile:             opt.CAFile,
 			CertFile:           opt.CertFile,
 			KeyFile:            opt.KeyFile,
-			Passphrase:         opt.Passphrase,
 			InsecureSkipVerify: opt.Insecure,
 		})
 	transport := &http.Transport{

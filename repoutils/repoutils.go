@@ -66,7 +66,6 @@ func fixAuthConfig(creds clitypes.AuthConfig, registry string) (c types.AuthConf
 	c.Username = creds.Username
 	c.Password = creds.Password
 	c.Auth = creds.Auth
-	c.Email = creds.Email
 	c.IdentityToken = creds.IdentityToken
 	c.RegistryToken = creds.RegistryToken
 

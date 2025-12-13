@@ -81,7 +81,6 @@ func TestBothTokenAndAccessTokenWork(t *testing.T) {
 			Password:      "123",
 			ServerAddress: ts.URL,
 		}
-		authConfig.Email = "me@email.com"
 		r, err := New(ctx, authConfig, Opt{Insecure: true, Debug: true})
 		if err != nil {
 			t.Fatalf("expected no error creating client, got %v", err)
