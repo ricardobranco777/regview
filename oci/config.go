@@ -100,7 +100,7 @@ type Image struct {
 	OS string `json:"os"`
 
 	// Config defines the execution parameters which should be used as a base when running a container using the image.
-	Config ImageConfig `json:"config,omitempty"`
+	Config ImageConfig `json:"config"`
 
 	/*
 		// RootFS references the layer content addresses used by the image.

@@ -121,7 +121,7 @@ func newFromTransport(ctx context.Context, auth types.AuthConfig, transport http
 }
 
 // url returns a registry URL with the passed arguements concatenated.
-func (r *Registry) url(pathTemplate string, args ...interface{}) string {
+func (r *Registry) url(pathTemplate string, args ...any) string {
 	pathSuffix := fmt.Sprintf(pathTemplate, args...)
 	url := fmt.Sprintf("%s%s", r.URL, pathSuffix)
 	return url

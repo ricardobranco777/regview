@@ -62,7 +62,7 @@ func getMax(ss []string) int {
 	return max
 }
 
-func getPass(prompt string, args ...interface{}) string {
+func getPass(prompt string, args ...any) string {
 	fmt.Fprintf(os.Stderr, prompt, args...)
 
 	pass, err := term.ReadPassword(int(os.Stdin.Fd()))

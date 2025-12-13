@@ -34,10 +34,10 @@ func GetAuthConfig(username, password, registry string) (types.AuthConfig, error
 	if registry != "" {
 		var tryRegistry []string
 
-		if strings.HasPrefix(registry, "https://") {
-			tryRegistry = append(tryRegistry, strings.TrimPrefix(registry, "https://"))
-		} else if strings.HasPrefix(registry, "http://") {
-			tryRegistry = append(tryRegistry, strings.TrimPrefix(registry, "http://"))
+		if after, ok := strings.CutPrefix(registry, "https://"); ok {
+			tryRegistry = append(tryRegistry, after)
+		} else if after, ok := strings.CutPrefix(registry, "http://"); ok {
+			tryRegistry = append(tryRegistry, after)
 		} else {
 			tryRegistry = append(tryRegistry, registry)
 			tryRegistry = append(tryRegistry, "https://"+registry)
