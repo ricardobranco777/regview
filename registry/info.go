@@ -10,8 +10,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/distribution/distribution/manifest/manifestlist"
-	"github.com/distribution/distribution/manifest/schema2"
+	"github.com/distribution/distribution/v3/manifest/manifestlist"
+	"github.com/distribution/distribution/v3/manifest/schema2"
 	"github.com/ricardobranco777/regview/oci"
 
 	digest "github.com/opencontainers/go-digest"

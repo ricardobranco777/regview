@@ -3,7 +3,7 @@ module github.com/ricardobranco777/regview
 go 1.25.0
 
 require (
-	github.com/distribution/distribution v2.8.3+incompatible
+	github.com/distribution/distribution/v3 v3.1.1
 	github.com/distribution/reference v0.6.0
 	github.com/docker/cli v29.3.1+incompatible
 	github.com/docker/go-connections v0.6.0
@@ -20,11 +20,9 @@ require (
 )
 
 require (
-	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.9.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
-	github.com/ricardobranco777/simplepki v0.0.0-20260214204011-1a03dbc11d5b // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 )
