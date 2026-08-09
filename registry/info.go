@@ -2,6 +2,7 @@ package registry
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"log"
@@ -44,7 +45,7 @@ func (r *Registry) GetImage(ctx context.Context, repo string, ref string) (*oci.
 	}
 
 	var image oci.Image
-	if err := image.UnmarshalJSON(data); err != nil {
+	if err := json.Unmarshal(data, &image); err != nil {
 		return nil, err
 	}
 
@@ -117,7 +118,7 @@ func (r *Registry) GetInfo(ctx context.Context, repo string, ref string) (*Info,
 	}
 
 	var m oci.Manifest
-	if err := m.UnmarshalJSON(data); err != nil {
+	if err := json.Unmarshal(data, &m); err != nil {
 		return nil, err
 	}
 
@@ -156,12 +157,12 @@ func (r *Registry) GetInfoAll(ctx context.Context, repo string, ref string, arch
 	var m oci.Index
 	switch resp.Header.Get("Content-Type") {
 	case manifestlist.MediaTypeManifestList, oci.MediaTypeImageIndex:
-		if err := m.UnmarshalJSON(data); err != nil {
+		if err := json.Unmarshal(data, &m); err != nil {
 			return nil, err
 		}
 	case schema2.MediaTypeManifest, oci.MediaTypeImageManifest:
 		var m oci.Manifest
-		if err := m.UnmarshalJSON(data); err != nil {
+		if err := json.Unmarshal(data, &m); err != nil {
 			return nil, err
 		}
 

@@ -2,6 +2,7 @@ package registry
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 
 	"github.com/ricardobranco777/regview/oci"
@@ -11,7 +12,7 @@ import (
 func apiError(data []byte, err error) error {
 	if bytes.HasPrefix(data, []byte(`{"errors"`)) {
 		var apiErr oci.ErrorResponse
-		if err := apiErr.UnmarshalJSON(data); err != nil {
+		if err := json.Unmarshal(data, &apiErr); err != nil {
 			return err
 		}
 		str := apiErr.Errors[0].Code

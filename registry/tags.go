@@ -2,6 +2,7 @@ package registry
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/url"
 
@@ -30,7 +31,7 @@ func (r *Registry) tags(ctx context.Context, u string, repository string) ([]str
 
 	var response oci.TagList
 
-	if err := response.UnmarshalJSON(data); err != nil {
+	if err := json.Unmarshal(data, &response); err != nil {
 		return nil, err
 	}
 

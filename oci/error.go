@@ -1,5 +1,3 @@
-//go:generate easyjson -all -disable_members_unescape $GOFILE
-
 // Copyright 2019 The Linux Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

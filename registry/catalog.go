@@ -2,6 +2,7 @@ package registry
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/url"
 
@@ -29,7 +30,7 @@ func (r *Registry) Catalog(ctx context.Context, u string) ([]string, error) {
 
 	var response oci.RepositoryList
 
-	if err := response.UnmarshalJSON(data); err != nil {
+	if err := json.Unmarshal(data, &response); err != nil {
 		return nil, err
 	}
 
