@@ -47,19 +47,19 @@ fmt: ## Verifies all files have been `gofmt`ed.
 	fi
 
 .PHONY: test
-test: prebuild ## Runs the go tests.
+test:
 	@echo "+ $@"
 	@$(GO) test -v $(shell $(GO) list ./...)
 
 .PHONY: vet
-vet: prebuild ## Verifies `go vet` passes.
+vet:
 	@echo "+ $@"
 	@if [[ ! -z "$(shell $(GO) vet $(shell $(GO) list ./...) | tee /dev/stderr)" ]]; then \
 		exit 1; \
 	fi
 
 .PHONY: staticcheck
-staticcheck: prebuild ## Verifies `staticcheck` passes.
+staticcheck:
 	@$(GO) install honnef.co/go/tools/cmd/staticcheck@2025.1.1
 	@echo "+ $@"
 	@if [[ ! -z "$(shell staticcheck $(shell $(GO) list ./...) | tee /dev/stderr)" ]]; then \
@@ -67,7 +67,7 @@ staticcheck: prebuild ## Verifies `staticcheck` passes.
 	fi
 
 .PHONY: cover
-cover: prebuild ## Runs go test with coverage.
+cover:
 	@echo "" > coverage.txt
 	@for d in $(shell $(GO) list ./...); do \
 		$(GO) test -race -coverprofile=profile.out -covermode=atomic "$$d"; \
@@ -78,7 +78,7 @@ cover: prebuild ## Runs go test with coverage.
 	done;
 
 .PHONY: install
-install: prebuild ## Installs the executable or package.
+install:
 	@echo "+ $@"
 	$(GO) install -a .
 
@@ -90,7 +90,7 @@ sha256sum $(BUILDDIR)/$(1)/$(2)/$(NAME) > $(BUILDDIR)/$(1)/$(2)/$(NAME).sha256;
 endef
 
 .PHONY: cross
-cross: *.go prebuild ## Builds the cross-compiled binaries, creating a clean directory structure (eg. GOOS/GOARCH/binary).
+cross: *.go
 	@echo "+ $@"
 	$(foreach GOOSARCH,$(GOOSARCHES), $(call buildpretty,$(subst /,,$(dir $(GOOSARCH))),$(notdir $(GOOSARCH))))
 
@@ -101,7 +101,7 @@ sha256sum $(BUILDDIR)/$(NAME)-$(1)-$(2) > $(BUILDDIR)/$(NAME)-$(1)-$(2).sha256;
 endef
 
 .PHONY: release
-release: *.go prebuild ## Builds the cross-compiled binaries, naming them in such a way for release (eg. binary-GOOS-GOARCH).
+release: *.go
 	@echo "+ $@"
 	$(foreach GOOSARCH,$(GOOSARCHES), $(call buildrelease,$(subst /,,$(dir $(GOOSARCH))),$(notdir $(GOOSARCH))))
 
