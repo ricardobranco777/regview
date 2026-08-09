@@ -34,7 +34,6 @@ gen:
 	$(RM) go.mod go.sum
 	$(GO) mod init $(BIN)
 	$(GO) mod tidy
-	$(GO) get github.com/ricardobranco777/simplepki
 
 .PHONY: all
 all: clean build fmt test staticcheck vet install ## Runs a clean, build, fmt, test, staticcheck, vet and install.

@@ -53,5 +53,4 @@ jobs:
           make staticcheck
       - name: e2e
         run: |
-          GOBIN=$HOME/.local/bin go install github.com/ricardobranco777/simplepki
           bash -x tests/e2e.sh

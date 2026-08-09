@@ -17,10 +17,11 @@ registry_dir=$(mktemp -d)
 name=registry$port
 image=regview
 certs="$PWD/tests/certs"
+gen_certs="$PWD/tests/gen-certs.sh"
 user="testuser"
 pass="testpass"
 
-(cd $certs ; simplepki ; cat subca.pem ca.pem > cacerts.pem ; htpasswd -Bbn $user $pass > htpasswd)
+(cd $certs ; bash "$gen_certs" ; cat subca.pem ca.pem > cacerts.pem ; htpasswd -Bbn $user $pass > htpasswd)
 
 cleanup () {
 	set +e
